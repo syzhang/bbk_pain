@@ -3,6 +3,7 @@ extract ids for disease classification
 """
 
 import os
+import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -39,7 +40,7 @@ def extract_disease(df, disease_code, visit=None):
 
     return df_dvd
 
-def plot_disease(df, df_disease_group, visits=[0,1,2,3], save_plot=True):
+def plot_disease(df, df_disease_group, visits=[0,1,2,3], save_plot=True, save_name='disease_groups'):
     """plot groups of disease"""
     # check data count
     f, axes = plt.subplots(2,int(np.ceil(df_disease_group.shape[0]/2)), figsize=(10, 6))#, sharey=True)
@@ -62,11 +63,11 @@ def plot_disease(df, df_disease_group, visits=[0,1,2,3], save_plot=True):
         c += 1
     # save plot
     if save_plot:
-        save_name = './figs/disease_groups.png'
+        save_name = f'./figs/{save_name}.png'
         plt.savefig(save_name, bbox_inches='tight')
     return df_out
 
-def group_disease_id(df, df_disease_group, visits=[0,1,2,3], save=True):
+def group_disease_id(df, df_disease_group, visits=[0,1,2,3], save=True, save_name='disease_group_id'):
     """save groups of disease"""
     c = 0
     df_out = pd.DataFrame()
@@ -82,17 +83,32 @@ def group_disease_id(df, df_disease_group, visits=[0,1,2,3], save=True):
             df_out = df_out.merge(df_tmp.dropna(how='all').reset_index(), on='eid', how='outer')
         c += 1
     if save:
-        df_out.to_csv('../output/disease_group_id.csv', header=None)
+        df_out.to_csv(f'../output/{save_name}.csv')
     return df_out
 
 # running
 if __name__=="__main__":
+    # which visits to use
+    visits = sys.argv[1] 
+    # save string
+    visits_ls = [int(x) for x in list(visits.split(','))]
+    if len(visits_ls)==1:
+        visits_str = 'visit'+str(visits_ls[0])
+    else:
+        visits_str = 'allvisits'
     # load data with conditions
-    tsv_cond = os.path.join('..', 'funpack_cfg', 'subj_with_condition_with_clinical_variables.tsv')
+    # tsv_cond = os.path.join('..', 'funpack_cfg', 'subj_with_condition_with_clinical_variables.tsv')
+    # load extended subjects with conditions
+    tsv_cond = os.path.join('..', 'funpack_cfg', 'subjs_with_condition_extended.tsv')
     df_cond = pd.read_csv(tsv_cond, sep='\t')
     # load disease groups
     df_disease_group = pd.read_csv('./bbk_codes/disease_code_grouped.csv')
     # plot disease numbers
-    plot_disease(df_cond, df_disease_group, visits=[0,1,2,3])
+    plot_disease(df_cond, df_disease_group, visits=visits_ls, save_name=f'disease_groups_{visits_str}_extended')
     # save disease group id
-    df_out = group_disease_id(df_cond, df_disease_group, visits=[0,1,2,3])
+    df_out = group_disease_id(df_cond, df_disease_group, visits=visits_ls, save_name=f'disease_group_id_{visits_str}_extended')
+    # extract eid for funpack
+    df_sliced_sj = pd.read_csv(os.path.join('..', 'output', f'disease_group_id_{visits_str}_extended.csv'))
+    df_sliced_sj['eid'].to_csv(os.path.join('..', 'output', f'subjs_disease_{visits_str}_extended.csv'), index=False, header=None)
+    # exclude multiple conditinos
+    # df_excluded = exclude_multidisease(df_out)
