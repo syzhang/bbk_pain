@@ -1,0 +1,54 @@
+﻿Field title,code
+When fluid intelligence test completed,20135
+FI1 : numeric addition test,20165
+FI2 : identify largest number,20167
+FI3 : word interpolation,20169
+FI4 : positional arithmetic,20171
+FI5 : family relationship calculation,20173
+FI6 : conditional arithmetic,20175
+FI7 : synonym,20177
+FI8 : chained arithmetic,20179
+FI9 : concept interpolation,20181
+FI10 : arithmetic sequence recognition,20183
+FI11 : antonym,20185
+FI12 : square sequence recognition,20187
+FI13 : subset inclusion logic,20189
+Fluid intelligence score,20191
+FI14 : alphanumeric substitution,20193
+Fluid intelligence completion status,20242
+when numeric memory test completed,20138
+Maximum digits remembered correctly,20240
+Number of columns displayed in round,20129
+Number of rows displayed in round,20130
+Number of correct matches in round,20131
+Number of incorrect matches in round,20132
+Time to complete round,20133
+When pairs test completed,20134
+Pairs matching completion status,20244
+When symbol digit substitution test completed,20137
+Number of symbol digit matches made correctly,20159
+Number of symbol digit matches attempted,20195
+First code array presented,20196
+Test array presented,20198
+Values wanted,20200
+Values entered,20229
+Duration to entering value,20230
+Symbol digit completion status,20245
+When trail making test completed,20136
+Errors before selecting correct item in numeric path (trail #1),20147
+Total errors traversing alphanumeric path (trail #2),20148
+Interval between previous point and current one in numeric path (trail #1),20149
+Interval between previous point and current one in alphanumeric path (trail #2),20155
+Duration to complete numeric path (trail #1),20156
+Duration to complete alphanumeric path (trail #2),20157
+Trail making completion status,20246
+Errors before selecting correct item in numeric path (trail #1),20247
+Errors before selecting correct item in alphanumeric path (trail #2),20248
+Date of all cause dementia report,42018
+Source of all cause dementia report,42019
+Date of alzheimer's disease report,42020
+Source of alzheimer's disease report,42021
+Date of vascular dementia report,42022
+Source of vascular dementia report,42023
+Date of frontotemporal dementia report,42024
+Source of frontotemporal dementia report,42025
