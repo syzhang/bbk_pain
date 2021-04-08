@@ -41,6 +41,7 @@ def load_qscode(questionnaire='all'):
     """load questionnaire code (lifestyle/mental/cognitive/digestive)"""
     base_dir = './bbk_codes/'
     questionnaire_ls = ['lifestyle','mental','cognitive','digestive']
+    # questionnaire_ls = ['lifestyle','mental','cognitive']
     if (questionnaire!='all') and (questionnaire in questionnaire_ls):
         df_qs = pd.read_csv(base_dir+questionnaire+'_code.csv')
     elif questionnaire=='all':
@@ -162,33 +163,67 @@ def replace_specific(df):
                 df_copy[c].replace(np.nan, 1., inplace=True) # treat as abandoned
     return df_copy
 
-def basic_dtree(df, test_size=0.5, save_plot=True):
-    """basic decision tree classification"""
+def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, save_plot=True, num_importance=20):
+    """basic classification"""
     from sklearn.metrics import confusion_matrix, classification_report
     from sklearn.model_selection import train_test_split
     
     y = df['label']
-    X = df.drop('label', axis=1)
+    X = df.drop(['label','eid'], axis=1)
     # dividing X, y into train and test data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=0, stratify=y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state, stratify=y)
     
-    from sklearn.tree import DecisionTreeClassifier
-    clf = DecisionTreeClassifier(max_depth = 5).fit(X_train, y_train)
-    predicted = clf.predict(X_test)
+    if classifier == 'dtree':
+        from sklearn.tree import DecisionTreeClassifier
+        clf = DecisionTreeClassifier(max_depth=5).fit(X_train, y_train)
+    elif classifier == 'rforest':
+        from sklearn.ensemble import RandomForestClassifier
+        clf = RandomForestClassifier(max_depth=5).fit(X_train, y_train)
+    # predict test set
+    y_test_predicted = clf.predict(X_test)
     
     # creating a confusion matrix
     from sklearn.metrics import ConfusionMatrixDisplay
-    cm = confusion_matrix(y_test, predicted)
+    cm = confusion_matrix(y_test, y_test_predicted)
     cm_display = ConfusionMatrixDisplay(cm, display_labels=clf.classes_).plot()
     if save_plot:
         plt.xticks(rotation=90)
-        plt.savefig('./figs/dtree_cm.png', bbox_inches='tight')
+        plt.savefig(f'./figs/{classifier}_cm.png', bbox_inches='tight')
 
+    # plot permutation importantce
+    from sklearn.inspection import permutation_importance
+    plot_num = num_importance
+    result = permutation_importance(clf, X_test, y_test, n_repeats=10, random_state=42, n_jobs=2)
+    # result = permutation_importance(clf, X_train, y_train, n_repeats=10, random_state=42, n_jobs=2)
+    sorted_idx = result.importances_mean.argsort()
+    question_labels = match_question(X_test.columns[sorted_idx[-plot_num:]])
+    fig, ax = plt.subplots(figsize=(5,5))
+    ax.boxplot(result.importances[sorted_idx[-plot_num:]].T, vert=False, labels=question_labels)
+    ax.set_title("Permutation Importances (test set)")
+    # ax.set_title("Permutation Importances (train set)")
+    if save_plot:
+        plt.savefig(f'./figs/{classifier}_importance.png', bbox_inches='tight')
+
+    # calculate accuracy / auc
     from sklearn.metrics import roc_auc_score
     auc = roc_auc_score(y_test, clf.predict_proba(X_test), multi_class='ovr')
     print(f"Classification report for classifier {clf}:\n"
-        f"{classification_report(y_test, predicted)}\n"
-        f"ROC AUC={auc}")
+        f"{classification_report(y_test, y_test_predicted)}\n"
+        f"ROC AUC={auc:.4f}, train accuracy={clf.score(X_train, y_train):.4f}, test accuracy={clf.score(X_test, y_test):.4f}")
+
+def match_question(q_codes):
+    """backward search questions to match question code"""
+    df_qs = load_qscode(questionnaire='all')
+    question_ls = []
+    for c in q_codes:
+        code = int(c.split('-')[0])
+        question = df_qs[df_qs['code']==code]['Field title'].values
+        question_ls.append(question)
+    return question_ls
+
+# # running
+# if __name__=="__main__":
+#     match_question(['20403-0.0','20403-0.0'])
 
 # running
 if __name__=="__main__":
@@ -201,10 +236,12 @@ if __name__=="__main__":
     # load questionnaire codes
     # questionnaire_ls = ['lifestyle','mental','cognitive','digestive','all']
     questionnaire_ls = ['all']
+    question_visits = [0,1,2]
+    # question_visits = [2]
     for q in questionnaire_ls:
         df_qs = load_qscode(q)
         # extract questionnaire of interest
-        df_qs = extract_qs(df_subjects, df_questionnaire=df_qs)
+        df_qs = extract_qs(df_subjects, df_questionnaire=df_qs, visits=question_visits)
         # exclude multi diseases subjects
         df_exclude, df_label_exclude = exclude_multidisease(df_qs, df_disease_label)
 
@@ -212,10 +249,12 @@ if __name__=="__main__":
     label_exclude = df_label_exclude.idxmax(axis=1)
     dff = df_exclude.merge(label_exclude.rename('label'), left_index=True, right_index=True)
     # impute
-    print(dff.shape)
-    dff_imputed = impute_qs(dff, freq_fill='median', nan_percent=0.)
-    print(dff_imputed.shape)
+    print(f'Questionnaires from visits {question_visits} shape={dff.shape}')
+    dff_imputed = impute_qs(dff, freq_fill='median', nan_percent=0.9)
+    print(f'After imputation shape={dff_imputed.shape}')
     dff_imputed = dff_imputed.dropna(how='all', axis=1)
-    print(dff_imputed.shape)
+    print(f'Drop all nan cols shape={dff_imputed.shape}')
     # basic classification
-    basic_dtree(dff_imputed, test_size=0.5, save_plot=True)
+    classifiers = ['dtree', 'rforest']
+    for c in classifiers:
+        basic_classify(dff_imputed, classifier=c, random_state=100, test_size=0.25, save_plot=True, num_importance=10)
