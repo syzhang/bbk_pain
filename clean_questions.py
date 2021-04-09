@@ -14,9 +14,9 @@ def extract_qs(df_subjects, df_questionnaire, visits=[2]):
     # extract all fields with questionnaire code
     field_cols = []
     for code in field_code:
-#         print(code)
-#         print(field_cols)
-        cols_ls = [col for col in df_subjects.columns if str(code)+'-' in col]
+        # cols_ls = [col for col in df_subjects.columns if str(code)+'-' in col]
+        code_root = str(code)+'-'
+        cols_ls = [col for col in df_subjects.columns if col[:len(code_root)]==code_root]
         if visits != None: # limit to visits only
             if len(cols_ls) > 1:
                 cols_exclude = []
@@ -223,7 +223,6 @@ def match_question(q_codes):
 
 # # running
 # if __name__=="__main__":
-#     match_question(['20403-0.0','20403-0.0'])
 
 # running
 if __name__=="__main__":
@@ -236,8 +235,8 @@ if __name__=="__main__":
     # load questionnaire codes
     # questionnaire_ls = ['lifestyle','mental','cognitive','digestive','all']
     questionnaire_ls = ['all']
-    question_visits = [0,1,2]
-    # question_visits = [2]
+    # question_visits = [0,1,2]
+    question_visits = [2]
     for q in questionnaire_ls:
         df_qs = load_qscode(q)
         # extract questionnaire of interest
