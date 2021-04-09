@@ -37,29 +37,40 @@ def extract_qs(df_subjects, df_questionnaire, visits=[2]):
     df_qs_rm = df_qs.loc[:, ~df_qs.columns.duplicated()]
     return df_qs_rm
 
-def load_qscode(questionnaire='all'):
-    """load questionnaire code (lifestyle/mental/cognitive/digestive)"""
+def load_qscode(questionnaire='all', idp=None):
+    """load questionnaire and idp code"""
     base_dir = './bbk_codes/'
-    questionnaire_ls = ['lifestyle','mental','cognitive','digestive']
-    # questionnaire_ls = ['lifestyle','mental','cognitive']
-    if (questionnaire!='all') and (questionnaire in questionnaire_ls):
-        df_qs = pd.read_csv(base_dir+questionnaire+'_code.csv')
-    elif questionnaire=='all':
-        qs_ls = []
-        for qs in questionnaire_ls:
-            qs_ls.append(pd.read_csv(base_dir+qs+'_code.csv'))
-        df_qs = pd.concat(qs_ls)
-    else:
-        raise ValueError('Questionnaire code does not exist.')
-    return df_qs
-
-def clean_dtype(df):
-    """clean up dtype related"""
-    df_tmp = df.dropna(how='all')
-    print(df_tmp.shape)
-    perc = df_tmp.shape[0]/df.shape[0]*100
-    print(f'{perc:.1f}% have all questions')
-    return df_tmp
+    # questionnaire data
+    df_qs = pd.DataFrame()
+    if questionnaire!=None:
+        questionnaire_ls = ['lifestyle','mental','cognitive','digestive','cwp','demographic']
+        if (questionnaire!='all') and (questionnaire in questionnaire_ls):
+            df_qs = pd.read_csv(os.path.join(base_dir, questionnaire+'_code.csv'))
+        elif questionnaire=='all':
+            qs_ls = []
+            for qs in questionnaire_ls:
+                qs_ls.append(pd.read_csv(os.path.join(base_dir,qs+'_code.csv')))
+            df_qs = pd.concat(qs_ls)
+        else:
+            raise ValueError('Questionnaire code does not exist.')
+    # idp data
+    df_idp = pd.DataFrame()
+    if idp!=None:
+        idp_ls = ['baseg','dktseg','subcorticalseg','subcorticalvol','subroiseg','whiteseg']
+        if (idp!='all') and (idp in idp_ls):
+            df_idp = pd.read_csv(os.path.join(base_dir, idp+'_code.csv'))
+        elif idp=='all':
+            idpc_ls = []
+            for i in idp_ls:
+                fname = 'idp_'+i+'_code.csv'
+                fpath = os.path.join(base_dir, fname)
+                idpc_ls.append(pd.read_csv(fpath))
+            df_idp = pd.concat(idpc_ls)
+        else:
+            raise ValueError('IDP code does not exist.')
+    # combine questionnaire with idp
+    df_out = pd.concat([df_qs, df_idp])
+    return df_out
 
 def disease_label(df_subjects, visits=[2]):
     """create disease label df"""
@@ -163,7 +174,7 @@ def replace_specific(df):
                 df_copy[c].replace(np.nan, 1., inplace=True) # treat as abandoned
     return df_copy
 
-def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, save_plot=True, num_importance=20):
+def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, save_plot=True, num_importance=20, questionnaire='all', idp='None'):
     """basic classification"""
     from sklearn.metrics import confusion_matrix, classification_report
     from sklearn.model_selection import train_test_split
@@ -196,7 +207,7 @@ def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, save_
     result = permutation_importance(clf, X_test, y_test, n_repeats=10, random_state=42, n_jobs=2)
     # result = permutation_importance(clf, X_train, y_train, n_repeats=10, random_state=42, n_jobs=2)
     sorted_idx = result.importances_mean.argsort()
-    question_labels = match_question(X_test.columns[sorted_idx[-plot_num:]])
+    question_labels = match_question(X_test.columns[sorted_idx[-plot_num:]],questionnaire=questionnaire, idp=idp)
     fig, ax = plt.subplots(figsize=(5,5))
     ax.boxplot(result.importances[sorted_idx[-plot_num:]].T, vert=False, labels=question_labels)
     ax.set_title("Permutation Importances (test set)")
@@ -211,9 +222,9 @@ def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, save_
         f"{classification_report(y_test, y_test_predicted)}\n"
         f"ROC AUC={auc:.4f}, train accuracy={clf.score(X_train, y_train):.4f}, test accuracy={clf.score(X_test, y_test):.4f}")
 
-def match_question(q_codes):
+def match_question(q_codes, questionnaire='all', idp=None):
     """backward search questions to match question code"""
-    df_qs = load_qscode(questionnaire='all')
+    df_qs = load_qscode(questionnaire=questionnaire, idp=idp)
     question_ls = []
     for c in q_codes:
         code = int(c.split('-')[0])
@@ -233,16 +244,18 @@ if __name__=="__main__":
     # create disease label
     df_disease_label = disease_label(df_subjects, visits=[2])
     # load questionnaire codes
-    # questionnaire_ls = ['lifestyle','mental','cognitive','digestive','all']
-    questionnaire_ls = ['all']
+    # questionnaire_ls = ['all']
     # question_visits = [0,1,2]
     question_visits = [2]
-    for q in questionnaire_ls:
-        df_qs = load_qscode(q)
-        # extract questionnaire of interest
-        df_qs = extract_qs(df_subjects, df_questionnaire=df_qs, visits=question_visits)
-        # exclude multi diseases subjects
-        df_exclude, df_label_exclude = exclude_multidisease(df_qs, df_disease_label)
+    
+    # load data
+    questionnaire = 'all'
+    idp = 'all'
+    df_qs = load_qscode(questionnaire=questionnaire, idp=idp)
+    # extract questionnaire of interest
+    df_qs = extract_qs(df_subjects, df_questionnaire=df_qs, visits=question_visits)
+    # exclude multi diseases subjects
+    df_exclude, df_label_exclude = exclude_multidisease(df_qs, df_disease_label)
 
     # reverse one hot encoding
     label_exclude = df_label_exclude.idxmax(axis=1)
@@ -256,4 +269,4 @@ if __name__=="__main__":
     # basic classification
     classifiers = ['dtree', 'rforest']
     for c in classifiers:
-        basic_classify(dff_imputed, classifier=c, random_state=100, test_size=0.25, save_plot=True, num_importance=10)
+        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp)
