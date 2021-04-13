@@ -47,6 +47,7 @@ def load_qscode(questionnaire='all', idp=None):
         if (questionnaire!='all') and (questionnaire in questionnaire_ls):
             df_qs = pd.read_csv(os.path.join(base_dir, questionnaire+'_code.csv'))
         elif questionnaire=='all':
+            questionnaire_ls = ['lifestyle','mental','cognitive','demographic']
             qs_ls = []
             for qs in questionnaire_ls:
                 qs_ls.append(pd.read_csv(os.path.join(base_dir,qs+'_code.csv')))
@@ -72,10 +73,15 @@ def load_qscode(questionnaire='all', idp=None):
     df_out = pd.concat([df_qs, df_idp])
     return df_out
 
-def disease_label(df_subjects, visits=[2]):
+def disease_label(df_subjects, visits=[2], grouping='simplified'):
     """create disease label df"""
     from disease_type import extract_disease
-    df_disease_group = pd.read_csv('./bbk_codes/disease_code_grouped.csv')
+    # different grouping
+    if grouping == 'simplified':
+        df_disease_group = pd.read_csv('./bbk_codes/disease_code_simplified.csv')
+    else:
+        df_disease_group = pd.read_csv('./bbk_codes/disease_code_grouped.csv')
+    # iterate diseases
     for i, r in df_disease_group.iterrows():
         # print(i,r['disease'])
         df_tmp = extract_disease(df_subjects, r['code'], visit=visits)
@@ -217,7 +223,10 @@ def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, save_
 
     # calculate accuracy / auc
     from sklearn.metrics import roc_auc_score
-    auc = roc_auc_score(y_test, clf.predict_proba(X_test), multi_class='ovr')
+    if len(np.unique(y))==2: # binary class
+        auc = roc_auc_score(y_test, clf.predict_proba(X_test)[:, 1])
+    else: # multiclass
+        auc = roc_auc_score(y_test, clf.predict_proba(X_test), multi_class='ovr')
     print(f"Classification report for classifier {clf}:\n"
         f"{classification_report(y_test, y_test_predicted)}\n"
         f"ROC AUC={auc:.4f}, train accuracy={clf.score(X_train, y_train):.4f}, test accuracy={clf.score(X_test, y_test):.4f}")
@@ -238,11 +247,11 @@ def match_question(q_codes, questionnaire='all', idp=None):
 # running
 if __name__=="__main__":
     # main questionnaire file
-    qs_path = os.path.join('..', 'funpack_cfg', 'questions_subjs_disease_visit2_extended.tsv')
+    qs_path = os.path.join('..', 'funpack_cfg', 'qsidp_subjs_disease_visit2_extended.tsv')
     # load subjects
     df_subjects = pd.read_csv(qs_path, sep='\t')
     # create disease label
-    df_disease_label = disease_label(df_subjects, visits=[2])
+    df_disease_label = disease_label(df_subjects, visits=[2], grouping='simplified')
     # load questionnaire codes
     # questionnaire_ls = ['all']
     # question_visits = [0,1,2]
@@ -266,6 +275,7 @@ if __name__=="__main__":
     print(f'After imputation shape={dff_imputed.shape}')
     dff_imputed = dff_imputed.dropna(how='all', axis=1)
     print(f'Drop all nan cols shape={dff_imputed.shape}')
+
     # basic classification
     classifiers = ['dtree', 'rforest']
     for c in classifiers:
