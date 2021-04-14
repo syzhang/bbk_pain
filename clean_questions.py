@@ -140,7 +140,7 @@ def replace_freq(df, use='median'):
     df_copy = df.copy()
     for c in df_copy.columns:
         tmp = df_copy[c].value_counts()
-        if tmp.shape[0]>7 and c!='label': # most likely frequency
+        if tmp.shape[0]>7 and tmp.shape[0]<50 and c!='label': # most likely frequency
             if use == 'median':
                 df_copy[c].fillna(tmp.median(), inplace=True)
             elif use == 'mean':
@@ -150,7 +150,11 @@ def replace_freq(df, use='median'):
                 df_copy[c].replace({np.nan: -3.}, inplace=True)
             elif np.any(df_copy[c]==-600.): # degree of bother, also has prefer not to say
                 df_copy[c].replace({np.nan: -818.}, inplace=True)
-
+        elif tmp.shape[0]>50 and c!='label': # most likely idps
+            if use == 'median':
+                df_copy[c].fillna(df_copy[c].median(), inplace=True)
+            elif use == 'mean':
+                df_copy[c].fillna(df_copy[c].mean(), inplace=True)
     return df_copy
 
 def replace_specific(df):
@@ -280,7 +284,7 @@ def load_patient_grouped(questionnaire='all', idp='all', question_visits=[2], im
         dff_imputed = dff_imputed.dropna(how='all', axis=1)
         print(f'Drop all nan cols shape={dff_imputed.shape}')
     else:
-        dff_imputed = dff
+        dff_imputed = dff.dropna()
     return dff_imputed
 
 

@@ -17,6 +17,8 @@ if __name__=="__main__":
     idp_ls = ['fast','subcorticalvol','t1vols','t2star','t2weighted','taskfmri','dmri','dmriweighted']
     questionnaire = None
     visits = [2]
+    # impute_flag = False
+    impute_flag = True
     # initialise
     name_ls, auc_ls, tr_ls, ts_ls = [], [], [], []
     # combinations
@@ -32,9 +34,9 @@ if __name__=="__main__":
         print(idp_name)
 
         if dataset == 'paincontrol':
-            dff_imputed = load_patient_matched(questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=True)
+            dff_imputed = load_patient_matched(questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag)
         elif dataset == 'paintype':
-            dff_imputed = load_patient_grouped(questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=True)
+            dff_imputed = load_patient_grouped(questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag)
 
         # basic classification
         auc, train_acc, test_acc = basic_classify(dff_imputed, classifier='rforest', random_state=0, test_size=0.25, plot_figs=False, save_plot=False, num_importance=20, questionnaire=questionnaire, idp=idp)
