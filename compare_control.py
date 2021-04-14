@@ -74,12 +74,13 @@ if __name__=="__main__":
     # match_ls = extract_control(df_control, df_disease, save_csv=True)
 
     # patient/matched control classify
-    questionnaire = 'all'
-    idp = None
+    questionnaire = None #'all'
+    idp = 'all'
     dff_imputed = load_patient_matched(questionnaire=questionnaire, idp=idp, question_visits=[2], imputed=True)
     # basic classification
     classifiers = ['dtree', 'rforest']
     for c in classifiers:
-        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp)
+        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp,
+        save_name='paincontrol_idp')
 
     

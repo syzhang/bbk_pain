@@ -57,10 +57,17 @@ def load_qscode(questionnaire='all', idp=None):
     # idp data
     df_idp = pd.DataFrame()
     if idp!=None:
-        idp_ls = ['baseg','dktseg','subcorticalseg','subcorticalvol','subroiseg','whiteseg']
-        if (idp!='all') and (idp in idp_ls):
-            df_idp = pd.read_csv(os.path.join(base_dir, idp+'_code.csv'))
-        elif idp=='all':
+        idp_ls = ['dmri','dmriweighted','fast','subcorticalvol','t1vols','t2star','t2weighted','taskfmri']
+        if (idp!='all') and (idp in idp_ls): # single idp set
+            df_idp = pd.read_csv(os.path.join(base_dir, 'idp_'+idp+'_code.csv'))
+        elif (idp!='all') and (type(idp) is list): # multiple idp sets
+            idpc_ls = []
+            for i in idp:
+                fname = 'idp_'+i+'_code.csv'
+                fpath = os.path.join(base_dir, fname)
+                idpc_ls.append(pd.read_csv(fpath))
+            df_idp = pd.concat(idpc_ls)
+        elif idp=='all': # all idp sets
             idpc_ls = []
             for i in idp_ls:
                 fname = 'idp_'+i+'_code.csv'
@@ -180,7 +187,7 @@ def replace_specific(df):
                 df_copy[c].replace(np.nan, 1., inplace=True) # treat as abandoned
     return df_copy
 
-def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, save_plot=True, num_importance=20, questionnaire='all', idp='None'):
+def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, save_plot=True, save_name='', num_importance=20, questionnaire='all', idp='None'):
     """basic classification"""
     from sklearn.metrics import confusion_matrix, classification_report
     from sklearn.model_selection import train_test_split
@@ -205,7 +212,7 @@ def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, save_
     cm_display = ConfusionMatrixDisplay(cm, display_labels=clf.classes_).plot()
     if save_plot:
         plt.xticks(rotation=90)
-        plt.savefig(f'./figs/{classifier}_cm.png', bbox_inches='tight')
+        plt.savefig(f'./figs/{save_name}_{classifier}_cm.png', bbox_inches='tight')
 
     # plot permutation importantce
     from sklearn.inspection import permutation_importance
@@ -219,7 +226,7 @@ def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, save_
     ax.set_title("Permutation Importances (test set)")
     # ax.set_title("Permutation Importances (train set)")
     if save_plot:
-        plt.savefig(f'./figs/{classifier}_importance.png', bbox_inches='tight')
+        plt.savefig(f'./figs/{save_name}_{classifier}_importance.png', bbox_inches='tight')
 
     # calculate accuracy / auc
     from sklearn.metrics import roc_auc_score
@@ -227,9 +234,13 @@ def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, save_
         auc = roc_auc_score(y_test, clf.predict_proba(X_test)[:, 1])
     else: # multiclass
         auc = roc_auc_score(y_test, clf.predict_proba(X_test), multi_class='ovr')
+    # calculate train/test accuracy
+    train_acc = clf.score(X_train, y_train)
+    test_acc = clf.score(X_test, y_test)
     print(f"Classification report for classifier {clf}:\n"
         f"{classification_report(y_test, y_test_predicted)}\n"
-        f"ROC AUC={auc:.4f}, train accuracy={clf.score(X_train, y_train):.4f}, test accuracy={clf.score(X_test, y_test):.4f}")
+        f"ROC AUC={auc:.4f}, train accuracy={train_acc:.4f}, test accuracy={test_acc:.4f}")
+    return auc, train_acc, test_acc
 
 def match_question(q_codes, questionnaire='all', idp=None):
     """backward search questions to match question code"""
@@ -241,28 +252,18 @@ def match_question(q_codes, questionnaire='all', idp=None):
         question_ls.append(question)
     return question_ls
 
-# # running
-# if __name__=="__main__":
-
-# running
-if __name__=="__main__":
+def load_patient_grouped(questionnaire='all', idp='all', question_visits=[2], imputed=True, patient_grouping='simplified'):
+    """load patient grouped and impute"""
     # main questionnaire file
     qs_path = os.path.join('..', 'funpack_cfg', 'qsidp_subjs_disease_visit2_extended.tsv')
     # load subjects
     df_subjects = pd.read_csv(qs_path, sep='\t')
     # create disease label
-    df_disease_label = disease_label(df_subjects, visits=[2], grouping='simplified')
-    # load questionnaire codes
-    # questionnaire_ls = ['all']
-    # question_visits = [0,1,2]
-    question_visits = [2]
-    
-    # load data
-    questionnaire = 'all'
-    idp = 'all'
-    df_qs = load_qscode(questionnaire=questionnaire, idp=idp)
+    df_disease_label = disease_label(df_subjects, visits=[2], grouping=patient_grouping)
+    # load question code
+    qs = load_qscode(questionnaire=questionnaire, idp=idp)
     # extract questionnaire of interest
-    df_qs = extract_qs(df_subjects, df_questionnaire=df_qs, visits=question_visits)
+    df_qs = extract_qs(df_subjects, df_questionnaire=qs, visits=question_visits)
     # exclude multi diseases subjects
     df_exclude, df_label_exclude = exclude_multidisease(df_qs, df_disease_label)
 
@@ -270,13 +271,28 @@ if __name__=="__main__":
     label_exclude = df_label_exclude.idxmax(axis=1)
     dff = df_exclude.merge(label_exclude.rename('label'), left_index=True, right_index=True)
     # impute
-    print(f'Questionnaires from visits {question_visits} shape={dff.shape}')
-    dff_imputed = impute_qs(dff, freq_fill='median', nan_percent=0.9)
-    print(f'After imputation shape={dff_imputed.shape}')
-    dff_imputed = dff_imputed.dropna(how='all', axis=1)
-    print(f'Drop all nan cols shape={dff_imputed.shape}')
+    if imputed:
+        print(f'Questionnaires from visits {question_visits} shape={dff.shape}')
+        dff_imputed = impute_qs(dff, freq_fill='median', nan_percent=0.9)
+        print(f'After imputation shape={dff_imputed.shape}')
+        dff_imputed = dff_imputed.dropna(how='all', axis=1)
+        print(f'Drop all nan cols shape={dff_imputed.shape}')
+    else:
+        dff_imputed = dff
+    return dff_imputed
+
+
+# running
+if __name__=="__main__":
+    # load questionnaire codes
+    # question_visits = [0,1,2]
+    question_visits = [2]
+    questionnaire = None #'all'
+    idp = 'all'
+    # load data
+    dff_imputed = load_patient_grouped(questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=True, patient_grouping='simplified')
 
     # basic classification
     classifiers = ['dtree', 'rforest']
     for c in classifiers:
-        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp)
+        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype')

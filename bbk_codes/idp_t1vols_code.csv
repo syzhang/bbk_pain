@@ -1,0 +1,13 @@
+code,Field title
+25000,Volumetric scaling from T1 head image to standard space
+25001,Volume of peripheral cortical grey matter (normalised for head size)
+25002,Volume of peripheral cortical grey matter
+25003,Volume of ventricular cerebrospinal fluid (normalised for head size)
+25004,Volume of ventricular cerebrospinal fluid
+25005,Volume of grey matter (normalised for head size)
+25006,Volume of grey matter
+25007,Volume of white matter (normalised for head size)
+25008,Volume of white matter
+25009,Volume of brain grey+white matter (normalised for head size)
+25010,Volume of brain grey+white matter
+25025,Volume of brain stem + 4th ventricle

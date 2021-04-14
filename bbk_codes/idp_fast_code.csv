@@ -8,10 +8,10 @@ code,Field title
 25881,Volume of grey matter in Caudate (right)
 25864,Volume of grey matter in Central Opercular Cortex (left)
 25865,Volume of grey matter in Central Opercular Cortex (right)
-25838,"Volume of grey matter in Cingulate Gyrus, anterior division (left)"
-25839,"Volume of grey matter in Cingulate Gyrus, anterior division (right)"
-25840,"Volume of grey matter in Cingulate Gyrus, posterior division (left)"
-25841,"Volume of grey matter in Cingulate Gyrus, posterior division (right)"
+25838,Volume of grey matter in Cingulate Gyrus anterior division (left)
+25839,Volume of grey matter in Cingulate Gyrus anterior division (right)
+25840,Volume of grey matter in Cingulate Gyrus posterior division (left)
+25841,Volume of grey matter in Cingulate Gyrus posterior division (right)
 25900,Volume of grey matter in Crus I Cerebellum (left)
 25902,Volume of grey matter in Crus I Cerebellum (right)
 25901,Volume of grey matter in Crus I Cerebellum (vermis)
@@ -75,10 +75,10 @@ code,Field title
 25885,Volume of grey matter in Pallidum (right)
 25836,Volume of grey matter in Paracingulate Gyrus (left)
 25837,Volume of grey matter in Paracingulate Gyrus (right)
-25848,"Volume of grey matter in Parahippocampal Gyrus, anterior division (left)"
-25849,"Volume of grey matter in Parahippocampal Gyrus, anterior division (right)"
-25850,"Volume of grey matter in Parahippocampal Gyrus, posterior division (left)"
-25851,"Volume of grey matter in Parahippocampal Gyrus, posterior division (right)"
+25848,Volume of grey matter in Parahippocampal Gyrus anterior division (left)
+25849,Volume of grey matter in Parahippocampal Gyrus anterior division (right)
+25850,Volume of grey matter in Parahippocampal Gyrus posterior division (left)
+25851,Volume of grey matter in Parahippocampal Gyrus posterior division (right)
 25866,Volume of grey matter in Parietal Operculum Cortex (left)
 25867,Volume of grey matter in Parietal Operculum Cortex (right)
 25868,Volume of grey matter in Planum Polare (left)
