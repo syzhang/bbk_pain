@@ -187,7 +187,7 @@ def replace_specific(df):
                 df_copy[c].replace(np.nan, 1., inplace=True) # treat as abandoned
     return df_copy
 
-def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, save_plot=True, save_name='', num_importance=20, questionnaire='all', idp='None'):
+def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, plot_figs=True, save_plot=True, save_name='', num_importance=20, questionnaire='all', idp='None'):
     """basic classification"""
     from sklearn.metrics import confusion_matrix, classification_report
     from sklearn.model_selection import train_test_split
@@ -206,27 +206,29 @@ def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, save_
     # predict test set
     y_test_predicted = clf.predict(X_test)
     
-    # creating a confusion matrix
-    from sklearn.metrics import ConfusionMatrixDisplay
-    cm = confusion_matrix(y_test, y_test_predicted)
-    cm_display = ConfusionMatrixDisplay(cm, display_labels=clf.classes_).plot()
-    if save_plot:
-        plt.xticks(rotation=90)
-        plt.savefig(f'./figs/{save_name}_{classifier}_cm.png', bbox_inches='tight')
+    # plotting confusion matrix and feature importance
+    if plot_figs:
+        # creating a confusion matrix
+        from sklearn.metrics import ConfusionMatrixDisplay
+        cm = confusion_matrix(y_test, y_test_predicted)
+        cm_display = ConfusionMatrixDisplay(cm, display_labels=clf.classes_).plot()
+        if save_plot:
+            plt.xticks(rotation=90)
+            plt.savefig(f'./figs/{save_name}_{classifier}_cm.png', bbox_inches='tight')
 
-    # plot permutation importantce
-    from sklearn.inspection import permutation_importance
-    plot_num = num_importance
-    result = permutation_importance(clf, X_test, y_test, n_repeats=10, random_state=42, n_jobs=2)
-    # result = permutation_importance(clf, X_train, y_train, n_repeats=10, random_state=42, n_jobs=2)
-    sorted_idx = result.importances_mean.argsort()
-    question_labels = match_question(X_test.columns[sorted_idx[-plot_num:]],questionnaire=questionnaire, idp=idp)
-    fig, ax = plt.subplots(figsize=(5,5))
-    ax.boxplot(result.importances[sorted_idx[-plot_num:]].T, vert=False, labels=question_labels)
-    ax.set_title("Permutation Importances (test set)")
-    # ax.set_title("Permutation Importances (train set)")
-    if save_plot:
-        plt.savefig(f'./figs/{save_name}_{classifier}_importance.png', bbox_inches='tight')
+        # plot permutation importantce
+        from sklearn.inspection import permutation_importance
+        plot_num = num_importance
+        result = permutation_importance(clf, X_test, y_test, n_repeats=10, random_state=42, n_jobs=2)
+        # result = permutation_importance(clf, X_train, y_train, n_repeats=10, random_state=42, n_jobs=2)
+        sorted_idx = result.importances_mean.argsort()
+        question_labels = match_question(X_test.columns[sorted_idx[-plot_num:]],questionnaire=questionnaire, idp=idp)
+        fig, ax = plt.subplots(figsize=(5,5))
+        ax.boxplot(result.importances[sorted_idx[-plot_num:]].T, vert=False, labels=question_labels)
+        ax.set_title("Permutation Importances (test set)")
+        # ax.set_title("Permutation Importances (train set)")
+        if save_plot:
+            plt.savefig(f'./figs/{save_name}_{classifier}_importance.png', bbox_inches='tight')
 
     # calculate accuracy / auc
     from sklearn.metrics import roc_auc_score
