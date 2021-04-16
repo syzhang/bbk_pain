@@ -191,6 +191,28 @@ def replace_specific(df):
                 df_copy[c].replace(np.nan, 1., inplace=True) # treat as abandoned
     return df_copy
 
+def cv_classify(df, classifier='dtree', cv_fold=10, questionnaire='all', idp='all'):
+    """n-fold cross validation classification"""
+    from sklearn.model_selection import cross_validate
+    # dummify labels
+    y_label = df['label']
+    y = pd.get_dummies(y_label).iloc[:,0]
+    X = df.drop(['label','eid'], axis=1)
+    # define classifier
+    if classifier == 'dtree':
+        from sklearn.tree import DecisionTreeClassifier
+        clf = DecisionTreeClassifier(max_depth=5)
+    elif classifier == 'rforest':
+        from sklearn.ensemble import RandomForestClassifier
+        clf = RandomForestClassifier(max_depth=5)
+    # cv result
+    cv_results = cross_validate(clf, X, y, cv=cv_fold, return_train_score=False, scoring=('accuracy', 'f1', 'roc_auc'))
+    df_res = pd.DataFrame(cv_results)
+    # print res
+    print(f"{cv_fold}-fold CV classification with classifier {clf}:\n"
+        f"test ROC AUC={df_res['test_roc_auc'].mean():.4f}, test accuracy={df_res['test_accuracy'].mean():.4f}, test f1={df_res['test_f1'].mean():.4f}")
+    return df_res
+
 def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, plot_figs=True, save_plot=True, save_name='', num_importance=20, questionnaire='all', idp='None'):
     """basic classification"""
     from sklearn.metrics import confusion_matrix, classification_report
@@ -294,11 +316,12 @@ if __name__=="__main__":
     # question_visits = [0,1,2]
     question_visits = [2]
     questionnaire = None #'all'
-    idp = 'all'
+    idp = 'fast'#'all'
     # load data
     dff_imputed = load_patient_grouped(questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=True, patient_grouping='simplified')
 
     # basic classification
     classifiers = ['dtree', 'rforest']
     for c in classifiers:
-        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype')
+        # basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype')
+        dfr = cv_classify(dff_imputed, classifier=c, cv_fold=10, questionnaire=questionnaire, idp=idp)
