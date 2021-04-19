@@ -191,13 +191,26 @@ def replace_specific(df):
                 df_copy[c].replace(np.nan, 1., inplace=True) # treat as abandoned
     return df_copy
 
-def cv_classify(df, classifier='dtree', cv_fold=10, questionnaire='all', idp='all'):
+def cv_classify(df, classifier='dtree', cv_fold=10, questionnaire='all', idp='all',
+                scaler=True, balance=True):
     """n-fold cross validation classification"""
     from sklearn.model_selection import cross_validate
     # dummify labels
     y_label = df['label']
     y = pd.get_dummies(y_label).iloc[:,0]
     X = df.drop(['label','eid'], axis=1)
+    # balance dataset
+    if balance:
+        from imblearn.under_sampling import RandomUnderSampler
+        # define undersampling strategy
+        under = RandomUnderSampler(random_state=0)
+        # fit and apply the transform
+        X, y = under.fit_resample(X, y)
+    # apply scaler
+    if scaler:
+        from sklearn.preprocessing import StandardScaler
+        X = StandardScaler().fit_transform(X)
+
     # define classifier
     if classifier == 'dtree':
         from sklearn.tree import DecisionTreeClassifier
@@ -213,16 +226,28 @@ def cv_classify(df, classifier='dtree', cv_fold=10, questionnaire='all', idp='al
         f"test ROC AUC={df_res['test_roc_auc'].mean():.4f}, test accuracy={df_res['test_accuracy'].mean():.4f}, test f1={df_res['test_f1'].mean():.4f}")
     return df_res
 
-def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, plot_figs=True, save_plot=True, save_name='', num_importance=20, questionnaire='all', idp='None'):
+def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, plot_figs=True, save_plot=True, save_name='', num_importance=20, questionnaire='all', idp=None, scaler=True, balance=True):
     """basic classification"""
     from sklearn.metrics import confusion_matrix, classification_report
     from sklearn.model_selection import train_test_split
     
     y = df['label']
     X = df.drop(['label','eid'], axis=1)
+    # balance dataset
+    if balance:
+        from imblearn.under_sampling import RandomUnderSampler
+        # define undersampling strategy
+        under = RandomUnderSampler(random_state=0)
+        # fit and apply the transform
+        X, y = under.fit_resample(X, y)
+    # apply scaler
+    if scaler:
+        from sklearn.preprocessing import StandardScaler
+        X_scale = StandardScaler().fit_transform(X)
     # dividing X, y into train and test data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state, stratify=y)
-    
+    X_train, X_test, y_train, y_test = train_test_split(X_scale, y, test_size=test_size, random_state=random_state, stratify=y)
+    _, X_test_cols, _, _ = train_test_split(X, y, test_size=test_size, random_state=random_state, stratify=y)
+
     if classifier == 'dtree':
         from sklearn.tree import DecisionTreeClassifier
         clf = DecisionTreeClassifier(max_depth=5).fit(X_train, y_train)
@@ -248,7 +273,7 @@ def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, plot_
         result = permutation_importance(clf, X_test, y_test, n_repeats=10, random_state=42, n_jobs=2)
         # result = permutation_importance(clf, X_train, y_train, n_repeats=10, random_state=42, n_jobs=2)
         sorted_idx = result.importances_mean.argsort()
-        question_labels = match_question(X_test.columns[sorted_idx[-plot_num:]],questionnaire=questionnaire, idp=idp)
+        question_labels = match_question(X_test_cols.columns[sorted_idx[-plot_num:]],questionnaire=questionnaire, idp=idp)
         fig, ax = plt.subplots(figsize=(5,5))
         ax.boxplot(result.importances[sorted_idx[-plot_num:]].T, vert=False, labels=question_labels)
         ax.set_title("Permutation Importances (test set)")
@@ -299,14 +324,16 @@ def load_patient_grouped(questionnaire='all', idp='all', question_visits=[2], im
     label_exclude = df_label_exclude.idxmax(axis=1)
     dff = df_exclude.merge(label_exclude.rename('label'), left_index=True, right_index=True)
     # impute
-    if imputed:
+    if imputed==True:
         print(f'Questionnaires from visits {question_visits} shape={dff.shape}')
         dff_imputed = impute_qs(dff, freq_fill='median', nan_percent=0.9)
         print(f'After imputation shape={dff_imputed.shape}')
         dff_imputed = dff_imputed.dropna(how='all', axis=1)
         print(f'Drop all nan cols shape={dff_imputed.shape}')
-    else:
+    elif imputed==False:
         dff_imputed = dff.dropna()
+    else:
+        dff_imputed = dff
     return dff_imputed
 
 
@@ -315,13 +342,14 @@ if __name__=="__main__":
     # load questionnaire codes
     # question_visits = [0,1,2]
     question_visits = [2]
-    questionnaire = None #'all'
-    idp = 'fast'#'all'
+    questionnaire = 'all'
+    idp = 'all'
     # load data
     dff_imputed = load_patient_grouped(questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=True, patient_grouping='simplified')
 
     # basic classification
-    classifiers = ['dtree', 'rforest']
+    classifiers = ['rforest']#'dtree', 
     for c in classifiers:
-        # basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype')
-        dfr = cv_classify(dff_imputed, classifier=c, cv_fold=10, questionnaire=questionnaire, idp=idp)
+        # basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype', scaler=True, balance=True)
+        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype_qs', scaler=True, balance=True)
+        # dfr = cv_classify(dff_imputed, classifier=c, cv_fold=10, questionnaire=questionnaire, idp=idp)

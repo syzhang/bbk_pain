@@ -1,0 +1,73 @@
+﻿Field title,code
+Mood swings,1920
+Miserableness,1930
+Irritability,1940
+Nervous feelings,1970
+Worrier / anxious feelings,1980
+Tense / 'highly strung',1990
+Worry too long after embarrassment,2000
+Suffer from nerves,2010
+"Loneliness, isolation",2020
+Risk taking,2040
+Frequency of unenthusiasm / disinterest in last 2 weeks,2060
+Frequency of tiredness / lethargy in last 2 weeks,2080
+"Seen doctor (GP) for nerves, anxiety, tension or depression",2090
+"Seen a psychiatrist for nerves, anxiety, tension or depression",2100
+Happiness,4526
+Work/job satisfaction,4537
+Health satisfaction,4548
+Family relationship satisfaction,4559
+Friendships satisfaction,4570
+Financial situation satisfaction,4581
+Number of depression episodes,4620
+Number of unenthusiastic/disinterested episodes,5386
+"Illness, injury, bereavement, stress in last 2 years",6145
+Bipolar and major depression status,20126
+Neuroticism score,20127
+Date of completing mental health questionnaire,20400
+Sleep duration,1160
+Getting up in morning,1170
+Sleeplessness / insomnia,1200
+Age at first episode of depression,20433
+Age at last episode of depression,20434
+General happiness,20458
+General happiness with own health,20459
+Belief that own life is meaningful,20460
+Ever sought or received professional help for mental distress,20499
+Ever suffered mental distress preventing usual activities,20500
+Mental health problems ever diagnosed by a professional,20544
+Bipolar disorder status,20122
+Single episode of probable major depression,20123
+Probable recurrent major depression (moderate),20124
+Probable recurrent major depression (severe),20125
+Ever thought that life not worth living,20479
+Ever self-harmed,20480
+Self-harmed in past year,20481
+Number of times self-harmed,20482
+Ever attempted suicide,20483
+Attempted suicide in past year,20484
+Ever contemplated self-harm,20485
+Contemplated self-harm in past year,20486
+Methods of self-harm used,20553
+Actions taken following self-harm,20554
+Felt hated by family member as a child,20487
+Physically abused by family as a child,20488
+Felt loved as a child,20489
+Sexually molested as a child,20490
+Someone to take to doctor when needed as a child,20491
+Felt irritable or had angry outbursts in past month,20494
+Avoided activities or situations because of previous stressful experience in past month,20495
+Felt distant from other people in past month,20496
+Repeated disturbing thoughts of stressful experience in past month,20497
+Felt very upset when reminded of stressful experience in past month,20498
+Belittlement by partner or ex-partner as an adult,20521
+Been in a confiding relationship as an adult,20522
+Physical violence by partner or ex-partner as an adult,20523
+Sexual interference by partner or ex-partner without consent as an adult,20524
+Able to pay rent/mortgage as an adult,20525
+Been in serious accident believed to be life-threatening,20526
+Been involved in combat or exposed to war-zone,20527
+Diagnosed with life-threatening illness,20528
+Victim of physically violent crime,20529
+Witnessed sudden violent death,20530
+Victim of sexual assault,20531

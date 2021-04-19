@@ -19,8 +19,8 @@ if __name__=="__main__":
     idp_ls = ['fast','subcorticalvol','t1vols','t2star','t2weighted','taskfmri','dmri','dmriweighted']
     questionnaire = None
     visits = [2]
-    # impute_flag = False
-    impute_flag = True
+    impute_flag = False # dropna
+    # impute_flag = True
     # initialise
     res_ls = []
     # combinations
@@ -44,7 +44,7 @@ if __name__=="__main__":
             dff_imputed = load_digestive_data(label_type='severe', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag)
 
         # cv classification
-        df_res = cv_classify(dff_imputed, classifier='rforest', cv_fold=10, questionnaire=questionnaire, idp=idp)
+        df_res = cv_classify(dff_imputed, classifier='rforest', cv_fold=4, questionnaire=questionnaire, idp=idp, scaler=True, balance=True)
         # save result
         df_res['IDP'] = idp_name
         res_ls.append(df_res)
@@ -52,4 +52,4 @@ if __name__=="__main__":
     # performance df
     df_perf = pd.concat(res_ls)
     # save to csv
-    df_perf.to_csv(f'./model_performance/{dataset}_idp_waterfall.csv', index=None)
+    df_perf.to_csv(f'./model_performance/{dataset}_idp_waterfall_dropna.csv', index=None)
