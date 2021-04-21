@@ -59,8 +59,6 @@ def load_patient_matched(questionnaire='all', idp='all', question_visits=[2], im
         print(f'Questionnaires from visits {question_visits} shape={dff.shape}')
         dff_imputed = impute_qs(dff, freq_fill='median', nan_percent=0.9)
         print(f'After imputation shape={dff_imputed.shape}')
-        dff_imputed = dff_imputed.dropna(how='all', axis=1)
-        print(f'Drop all nan cols shape={dff_imputed.shape}')
     elif imputed==False:
         dff_imputed = dff.dropna()
     else:
@@ -76,13 +74,13 @@ if __name__=="__main__":
     # match_ls = extract_control(df_control, df_disease, save_csv=True)
 
     # patient/matched control classify
-    questionnaire = None #'all'
+    questionnaire = 'all'
     idp = 'all'
-    dff_imputed = load_patient_matched(questionnaire=questionnaire, idp=idp, question_visits=[2], imputed=False)
+    dff_imputed = load_patient_matched(questionnaire=questionnaire, idp=idp, question_visits=[2], imputed=True)
     # basic classification
     classifiers = ['rforest']#'dtree', 
     for c in classifiers:
         basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp,
-        save_name='paincontrol')
+        save_name='paincontrol_qs')
 
     

@@ -22,7 +22,7 @@ from predict_digestive import *
 
 names = ["Nearest Neighbors", "Linear SVM", 
          "Decision Tree", "Random Forest", 
-         "AdaBoost", "QDA"]#, "XGB"]
+         "AdaBoost", "QDA", "XGB"]
 
 classifiers = [
     KNeighborsClassifier(3),
@@ -31,18 +31,18 @@ classifiers = [
     RandomForestClassifier(max_depth=5),
     AdaBoostClassifier(),
     QuadraticDiscriminantAnalysis(),
-    # xgb.XGBClassifier()
+    xgb.XGBClassifier()
     ]
 
 rng = np.random.RandomState(2)
 
 # classifier flags
-questionnaire = None #'all'
-idp = 'all'#['t1vols','taskfmri']#'all'
+questionnaire = 'all'
+idp = 'all'
 question_visits = [2]
-# impute_flag = True # fillna w median
-impute_flag = False # dropna
-umap_flag = True # use umap to reduce dimension
+impute_flag = True # fillna w median
+# impute_flag = False # dropna
+# umap_flag = True # use umap to reduce dimension
 
 # load all datasets
 datasets = [
@@ -93,5 +93,4 @@ for ds_cnt, ds in enumerate(datasets):
 # performance df
 df_perf = pd.concat(res_ls)
 # save to csv
-impute_status = impute_flag*'_imputed'
-df_perf.to_csv(f'./model_performance/all_data_classifiers{impute_status}.csv', index=None)
+df_perf.to_csv(f'./model_performance/all_data_classifiers.csv', index=None)

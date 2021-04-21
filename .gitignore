@@ -4,3 +4,5 @@ dev*.ipynb
 *.xlsx
 python.*
 .DS_Store
+.tmp/
+saved_models/

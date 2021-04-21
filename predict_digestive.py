@@ -27,8 +27,6 @@ def load_digestive_data(label_type='severe', questionnaire='all', idp='all', que
         print(f'Questionnaires from visits {question_visits} shape={dff.shape}')
         dff_imputed = impute_qs(dff, freq_fill='median', nan_percent=nan_percent)
         print(f'After imputation shape={dff_imputed.shape}')
-        dff_imputed = dff_imputed.dropna(how='all', axis=1)
-        print(f'Drop all nan cols shape={dff_imputed.shape}')
     elif imputed==False:
         dff_imputed = dff.dropna()
     else:
@@ -87,14 +85,14 @@ if __name__=="__main__":
     # load questionnaire codes
     # question_visits = [0,1,2]
     question_visits = [2]
-    questionnaire = None #'all'
+    questionnaire = 'all'
     idp = 'all'#['t1vols','taskfmri']#
     # load data
-    # dff_imputed = load_digestive_data(label_type='severe', questionnaire=questionnaire, idp=idp, question_visits=[2], imputed=True) 
-    dff_imputed = load_digestive_data(label_type='severe', questionnaire=questionnaire, idp=idp, question_visits=[2], imputed=False)
+    dff_imputed = load_digestive_data(label_type='severe', questionnaire=questionnaire, idp=idp, question_visits=[2], imputed=True) 
+    # dff_imputed = load_digestive_data(label_type='severe', questionnaire=questionnaire, idp=idp, question_visits=[2], imputed=False)
 
     # basic classification
     classifiers = ['rforest']#'dtree', 
     for c in classifiers:
-        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='digestive')
+        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='digestive_qs')
         # dfr = cv_classify(dff_imputed, classifier=c, cv_fold=10, questionnaire=questionnaire, idp=idp)

@@ -42,10 +42,17 @@ def load_qscode(questionnaire='all', idp=None):
     base_dir = './bbk_codes/'
     # questionnaire data
     df_qs = pd.DataFrame()
-    if questionnaire!=None:
+    if questionnaire!=None and len(questionnaire)!=0:
         questionnaire_ls = ['lifestyle','mental','cognitive','digestive','cwp','demographic']
         if (questionnaire!='all') and (questionnaire in questionnaire_ls):
             df_qs = pd.read_csv(os.path.join(base_dir, questionnaire+'_code.csv'))
+        elif (questionnaire!='all') and (type(questionnaire) is list): # multiple qs sets
+            qs_ls = []
+            for i in questionnaire:
+                fname = i+'_code.csv'
+                fpath = os.path.join(base_dir, fname)
+                qs_ls.append(pd.read_csv(fpath))
+            df_qs = pd.concat(qs_ls)
         elif questionnaire=='all':
             questionnaire_ls = ['lifestyle','mental','cognitive','demographic']
             qs_ls = []
@@ -56,8 +63,8 @@ def load_qscode(questionnaire='all', idp=None):
             raise ValueError('Questionnaire code does not exist.')
     # idp data
     df_idp = pd.DataFrame()
-    if idp!=None:
-        idp_ls = ['dmri','dmriweighted','fast','subcorticalvol','t1vols','t2star','t2weighted','taskfmri']
+    if idp!=None and len(idp)!=0:
+        idp_ls = ['dmri','wdmri','fast','subcorticalvol','t1vols','t2star','t2weighted','taskfmri']
         if (idp!='all') and (idp in idp_ls): # single idp set
             df_idp = pd.read_csv(os.path.join(base_dir, 'idp_'+idp+'_code.csv'))
         elif (idp!='all') and (type(idp) is list): # multiple idp sets
@@ -115,8 +122,27 @@ def exclude_multidisease(df, df_label):
     df_exclude = df_copy.loc[df_label_copy['sum']<=1]
     return df_exclude, df_label_exclude
 
-def impute_qs(df, nan_percent=0.9, freq_fill='median'):
+def impute_qs(df, nan_percent=0.9, freq_fill='median', 
+              transform=False, transform_fn='sqrt'):
     """impute questionnaire df"""
+    df_copy = df.copy()
+    # replace prefer not to say and remove object
+    df_copy = replace_noans(df_copy)
+    # replace multiple choice fields
+    df_copy = replace_multifield(df_copy)
+    # replace specific fields
+    df_copy = replace_specific(df_copy)
+    # fill freq nan with median
+    df_copy = replace_freq(df_copy, use=freq_fill)
+    # transform freq cols
+    if transform:
+        df_copy = apply_transform(df_copy, use=transform_fn)
+    # drop columns with threshold percentage nan
+    df_copy.dropna(axis=1, thresh=int(nan_percent*df_copy.shape[0]), inplace=True)
+    return df_copy
+
+def replace_noans(df):
+    """replace prefer not to say if avaialable and remove object cols"""
     df_copy = df.copy()
     for col in df_copy.columns:
         if col!='label': # exclude label
@@ -124,45 +150,27 @@ def impute_qs(df, nan_percent=0.9, freq_fill='median'):
             if df_copy[col].dtype==object:
                 df_copy.drop(col, axis=1, inplace=True)
             # replace nan with -818 (prefer not to say)
-            elif np.any(df_copy[col]<-810):
-#                 print(col)
+            elif np.any(df_copy[col]==-818):
                 df_copy[col].replace({np.nan: -818.}, inplace=True)
-    # fill freq nan with median
-    df_copy = replace_freq(df_copy, use=freq_fill)
-    # replace specific fields
-    df_copy = replace_specific(df_copy)
-    # drop columns with threshold percentage nan
-    df_copy.dropna(axis=1, thresh=int(nan_percent*df_copy.shape[0]), inplace=True)
     return df_copy
 
-def replace_freq(df, use='median'):
-    """replace nan in freq with median"""
+def replace_multifield(df):
+    """replace multiple choice fields"""
     df_copy = df.copy()
-    for c in df_copy.columns:
-        tmp = df_copy[c].value_counts()
-        if tmp.shape[0]>7 and tmp.shape[0]<50 and c!='label': # most likely frequency
-            if use == 'median':
-                df_copy[c].fillna(tmp.median(), inplace=True)
-            elif use == 'mean':
-                df_copy[c].fillna(tmp.mean(), inplace=True)
-        elif tmp.shape[0]<=7 and c!='label': # other types of freq
-            if np.any(df_copy[c]==-3.) or np.any(df_copy[c]==-1.): # prefer not to say
-                df_copy[c].replace({np.nan: -3.}, inplace=True)
-            elif np.any(df_copy[c]==-600.): # degree of bother, also has prefer not to say
-                df_copy[c].replace({np.nan: -818.}, inplace=True)
-        elif tmp.shape[0]>50 and c!='label': # most likely idps
-            if use == 'median':
-                df_copy[c].fillna(df_copy[c].median(), inplace=True)
-            elif use == 'mean':
-                df_copy[c].fillna(df_copy[c].mean(), inplace=True)
+    categories_multi = [
+        '6160',#Leisure/social activities
+        '6145',#Illness, injury, bereavement, stress in last 2 years
+    ]
+    for cat in categories_multi:
+        p_cols = [col for col in df_copy.columns if col[:len(cat)+1]==str(cat)+'-']
+        for c in p_cols: # replace with none of the above -7
+            df_copy[c].replace(np.nan, -7., inplace=True)
     return df_copy
 
 def replace_specific(df):
     """replace specific categories"""
     df_copy = df.copy()
     categories_zero = [
-        '6160',#Leisure/social activities
-        '6145',#Illness, injury, bereavement, stress in last 2 years
         '20123',#Single episode of probable major depression
         '20124',#Probable recurrent major depression (moderate)
         '20125', #Probable recurrent major depression (severe)
@@ -191,13 +199,48 @@ def replace_specific(df):
                 df_copy[c].replace(np.nan, 1., inplace=True) # treat as abandoned
     return df_copy
 
+def replace_freq(df, use='median'):
+    """replace nan in freq with median"""
+    df_copy = df.copy()
+    for c in df_copy.columns:
+        tmp = df_copy[c].value_counts()
+        if tmp.shape[0]>7 and c!='label': # most likely frequency/idp
+            if use == 'median':
+                df_copy[c].fillna(df_copy[c].median(), inplace=True)
+            elif use == 'mean':
+                df_copy[c].fillna(df_copy[c].mean(), inplace=True)
+        elif tmp.shape[0]<=7 and c!='label': # other types of freq
+            if np.any(df_copy[c]==-3.) or np.any(df_copy[c]==-1.): # prefer not to say
+                df_copy[c].replace({np.nan: -3.}, inplace=True)
+#             elif np.any(df_copy[c]==-600.): # degree of bother, also has prefer not to say
+#                 df_copy[c].replace({np.nan: -818.}, inplace=True)
+    return df_copy
+
+def apply_transform(df, use='sqrt'):
+    """adding additional freq cols with transforms"""
+    df_copy = df.copy()
+    trans_freq = [
+        '22040', # Summed MET minutes per week for all activity
+        '20156', # Duration to complete numeric path (trail #1)
+        '20157', # Duration to complete alphanumeric path (trail #2)
+    ]
+    if use=='log':
+        fn = np.log
+    elif use=='sqrt':
+        fn = np.sqrt
+    for c in df_copy.columns:
+        for cat in trans_freq:
+            if cat in c:
+                df_copy[c+'-1'] = df_copy[c].apply(fn)
+    return df_copy
+
 def cv_classify(df, classifier='dtree', cv_fold=10, questionnaire='all', idp='all',
                 scaler=True, balance=True):
     """n-fold cross validation classification"""
     from sklearn.model_selection import cross_validate
     # dummify labels
     y_label = df['label']
-    y = pd.get_dummies(y_label).iloc[:,0]
+    # y = pd.get_dummies(y_label).iloc[:,0]
     X = df.drop(['label','eid'], axis=1)
     # balance dataset
     if balance:
@@ -322,14 +365,18 @@ def load_patient_grouped(questionnaire='all', idp='all', question_visits=[2], im
 
     # reverse one hot encoding
     label_exclude = df_label_exclude.idxmax(axis=1)
-    dff = df_exclude.merge(label_exclude.rename('label'), left_index=True, right_index=True)
+    # code label to binary
+    lab = label_exclude=='chronic central pain'
+    label = lab.astype(int)
+
+    dff = df_exclude.merge(label.rename('label'), left_index=True, right_index=True)
     # impute
     if imputed==True:
         print(f'Questionnaires from visits {question_visits} shape={dff.shape}')
-        dff_imputed = impute_qs(dff, freq_fill='median', nan_percent=0.9)
+        dff_imputed = impute_qs(dff, freq_fill='median', nan_percent=0.9, transform=False)
         print(f'After imputation shape={dff_imputed.shape}')
-        dff_imputed = dff_imputed.dropna(how='all', axis=1)
-        print(f'Drop all nan cols shape={dff_imputed.shape}')
+        # dff_imputed = dff_imputed.dropna(how='all', axis=1)
+        # print(f'Drop all nan cols shape={dff_imputed.shape}')
     elif imputed==False:
         dff_imputed = dff.dropna()
     else:

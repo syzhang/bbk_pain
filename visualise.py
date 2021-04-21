@@ -46,14 +46,14 @@ if __name__=="__main__":
         comp_var = 'IDP'
         for d in ['paincontrol', 'paintype', 'digestive']:
             # df_tmp = pd.read_csv(f'./model_performance/{d}_idp_waterfall.csv')
-            df_tmp = pd.read_csv(f'./model_performance/{d}_idp_waterfall_dropna.csv')
-            df = sort_compare(df_tmp, comp_var=comp_var, criteria='accuracy', sort_top=20)
-            plot_compare(df, save_name=d+'_dropna', comp_var=comp_var)
+            df_tmp = pd.read_csv(f'./model_performance/{d}_qs_waterfall.csv')
+            df = sort_compare(df_tmp, comp_var=comp_var, criteria='accuracy', sort_top=15)
+            plot_compare(df, save_name=d+'_qs', comp_var=comp_var)
     elif plot_type=='clf':
         # plot all clf compare
         preproc = 'all_data'
         comp_var = 'classifier'
-        # df_tmp = pd.read_csv(f'./model_performance/{preproc}_classifiers.csv')#classifiers x datasets (3) x 10cv
+        df_tmp = pd.read_csv(f'./model_performance/{preproc}_classifiers.csv')#classifiers x datasets (3) x 10cv
         for d in ['paincontrol', 'paintype', 'digestive']:
             df_tmpd = df_tmp[df_tmp['dataset']==d]
             df = sort_compare(df_tmpd, comp_var=comp_var, criteria='accuracy', sort_top=len(np.unique(df_tmpd[comp_var])))
