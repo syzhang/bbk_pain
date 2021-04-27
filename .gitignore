@@ -6,3 +6,6 @@ python.*
 .DS_Store
 .tmp/
 saved_models/
+*.ckpt
+*.zip
+examples/

@@ -1,8 +1,11 @@
 # submit jobs
 
 # waterfall for 3 datasets
-fsl_sub -T 300 python waterfall_idp.py paincontrol
-
-fsl_sub -T 300 python waterfall_idp.py paintype
-
-fsl_sub -T 300 python waterfall_idp.py digestive
+for num in {1..20}
+do
+    for gp in "paincontrol" "paintype" "digestive"
+    do 
+    echo "submitted waterfall group $gp, number $num"
+    fsl_sub -T 200 python waterfall_idp.py $gp $num
+    done
+done

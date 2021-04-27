@@ -239,7 +239,8 @@ def cv_classify(df, classifier='dtree', cv_fold=10, questionnaire='all', idp='al
     """n-fold cross validation classification"""
     from sklearn.model_selection import cross_validate
     # dummify labels
-    y_label = df['label']
+    y = df['label']
+    # y_label = df['label']
     # y = pd.get_dummies(y_label).iloc[:,0]
     X = df.drop(['label','eid'], axis=1)
     # balance dataset

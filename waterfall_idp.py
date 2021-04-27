@@ -14,7 +14,9 @@ from predict_digestive import *
 # running
 if __name__=="__main__":
     # which dataset to use (paintype or paincontrol classification)
-    dataset = sys.argv[1] 
+    dataset = sys.argv[1]
+    # split idp sets as group to reduce time
+    groupnum = sys.argv[2]
     # patient/matched control classify
     idp_ls = ['fast','subcorticalvol','t1vols','t2star','t2weighted','taskfmri','dmri','wdmri']
     qs_ls = ['lifestyle','mental','cognitive','demographic']
@@ -29,7 +31,12 @@ if __name__=="__main__":
     print(len(idp_sets))
 
     # loop through combinations
-    for idpx in idp_sets:
+    group = 205
+    gn = int(groupnum)
+    start_idx = (gn-1)*group
+    end_idx = gn*group
+    # print(start_idx, end_idx)
+    for idpx in idp_sets[start_idx:end_idx]:
         idp = list(idpx)
         idpn = [t[:3] for t in idp]
         idp_name = '+'.join(idpn)
@@ -56,4 +63,6 @@ if __name__=="__main__":
     # performance df
     df_perf = pd.concat(res_ls)
     # save to csv
-    df_perf.to_csv(f'./model_performance/{dataset}_waterfall.csv', index=None)
+    fname = f'./model_performance/output/{dataset}_waterfall_{gn:02d}.csv'
+    print(fname)
+    df_perf.to_csv(fname, index=None)

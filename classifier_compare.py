@@ -13,6 +13,7 @@ from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.model_selection import cross_validate
 import xgboost as xgb
+import lightgbm as lgb
 
 from imblearn.under_sampling import RandomUnderSampler
 
@@ -20,11 +21,12 @@ from compare_control import *
 from clean_questions import *
 from predict_digestive import *
 
-names = ["Nearest Neighbors", "Linear SVM", 
+names = ["LGB", "Nearest Neighbors", "Linear SVM", 
          "Decision Tree", "Random Forest", 
          "AdaBoost", "QDA", "XGB"]
 
 classifiers = [
+    lgb.LGBMClassifier(n_jobs=-1),
     KNeighborsClassifier(3),
     SVC(kernel="linear", C=0.025, probability=True),
     DecisionTreeClassifier(max_depth=5),
