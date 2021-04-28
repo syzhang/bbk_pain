@@ -234,8 +234,7 @@ def apply_transform(df, use='sqrt'):
                 df_copy[c+'-1'] = df_copy[c].apply(fn)
     return df_copy
 
-def cv_classify(df, classifier='dtree', cv_fold=10, questionnaire='all', idp='all',
-                scaler=True, balance=True):
+def cv_classify(df, classifier='dtree', cv_fold=10, scaler=True, balance=True):
     """n-fold cross validation classification"""
     from sklearn.model_selection import cross_validate
     # dummify labels

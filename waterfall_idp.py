@@ -55,7 +55,7 @@ if __name__=="__main__":
             dff_imputed = load_digestive_data(label_type='severe', questionnaire=qs_in, idp=id_in, question_visits=visits, imputed=impute_flag)
 
         # cv classification
-        df_res = cv_classify(dff_imputed, classifier='rforest', cv_fold=4, questionnaire=qs_in, idp=id_in, scaler=True, balance=True)
+        df_res = cv_classify(dff_imputed, classifier='rforest', cv_fold=4, scaler=True, balance=True)
         # save result
         df_res['QS/IDP'] = idp_name
         res_ls.append(df_res)

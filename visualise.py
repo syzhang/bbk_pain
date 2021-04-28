@@ -20,6 +20,18 @@ def sort_compare(df_tmp, comp_var='IDP', criteria='accuracy', sort_top=2):
         df = df_tmp
     return df
 
+def load_outputs(task_name='paintype'):
+    """load all model performance given group name"""
+    output_dir = './model_performance/output'
+    df_ls = []
+    for f in os.listdir(output_dir):
+        if f.startswith(task_name):
+            df_tmp = pd.read_csv(os.path.join(output_dir, f))
+            df_ls.append(df_tmp)
+    df = pd.concat(df_ls)
+    df.drop_duplicates(inplace=True)
+    return df
+
 def plot_compare(df, save_name='paintype', comp_var='IDP'):
     """plot model comparison"""
     # plot
@@ -34,7 +46,7 @@ def plot_compare(df, save_name='paintype', comp_var='IDP'):
         axes[i].set_ylim(df[c].mean()-0.5*dfc_diff, df[c].mean()+0.5*dfc_diff)
     # save
     sns.despine(bottom=True)
-    plt.savefig(f'./model_performance/figs/{save_name}_{comp_var}_compare.png', bbox_inches='tight')
+    plt.savefig(f'./model_performance/figs/{save_name}_compare.png', bbox_inches='tight')
 
 # running
 if __name__=="__main__":
@@ -43,12 +55,13 @@ if __name__=="__main__":
 
     if plot_type=='idp':
         # plot waterfall
-        comp_var = 'IDP'
+        comp_var = 'QS/IDP'
         for d in ['paincontrol', 'paintype', 'digestive']:
-            # df_tmp = pd.read_csv(f'./model_performance/{d}_idp_waterfall.csv')
-            df_tmp = pd.read_csv(f'./model_performance/{d}_qs_waterfall.csv')
-            df = sort_compare(df_tmp, comp_var=comp_var, criteria='accuracy', sort_top=15)
-            plot_compare(df, save_name=d+'_qs', comp_var=comp_var)
+            print(d)
+            df_tmp = load_outputs(d)
+            # df = sort_compare(df_tmp, comp_var=comp_var, criteria='accuracy', sort_top=15)
+            df = sort_compare(df_tmp, comp_var=comp_var, criteria='roc_auc', sort_top=15)
+            plot_compare(df, save_name=d+'_QSIDP', comp_var=comp_var)
     elif plot_type=='clf':
         # plot all clf compare
         preproc = 'all_data'
