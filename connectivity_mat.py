@@ -2,23 +2,21 @@
 using connectivity for classification
 """
 import os
-import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
 
 from clean_questions import * 
 from compare_control import *
 from predict_digestive import *
 
 
-def load_connectivity(task_name='paintype'):
+def load_connectivity(task_name='paintype', add_questionnaire=False, add_idp=False):
     """load connectivity given classification task"""
     conmat_dir = '/vols/Data/pain/asdahl/uk_biobank/suyi_extend/ukbf/rfMRI/fullcorr_100/'
     eid_ls = []
     # collect eid based on task name
-    dff = check_eid(task_name)
+    dff = check_eid(task_name, add_questionnaire=add_questionnaire, add_idp=add_idp)
     for f in os.listdir(conmat_dir):
         if f.endswith('_0.txt'):
             # record eid
@@ -36,15 +34,31 @@ def load_connectivity(task_name='paintype'):
     # convert to df
     arr_conmat = np.array(conmat_ls, dtype=float)
     df = pd.DataFrame(arr_conmat)
-    df['eid'] = dff_slice['eid'].values
-    df['label'] = dff_slice['label'].values
-    return df
 
-def check_eid(task_name='paintype'):
+    # adding idp or questionnaire if needed
+    if add_questionnaire or add_idp:
+        df_out = pd.concat([df, dff_slice.reset_index(drop=True)], axis=1)
+        print(df_out)
+    else:
+        df_out = df
+    df['eid'] = dff_slice['eid'].values
+    df['label'] = dff_slice['label'].values    
+    return df_out
+
+def check_eid(task_name='paintype', add_questionnaire=False, add_idp=False):
     """check eid and make labels"""
     # load settings
     questionnaire = None
-    idp = ['t2weighted']
+    idp = None
+    if add_questionnaire==True and add_idp==False:
+        questionnaire = 'all'
+    elif add_idp==True and add_questionnaire==False:
+        idp = 'all'
+    elif add_idp==True and add_questionnaire==True:
+        questionnaire = 'all'
+        idp = 'all'
+    else: # placeholder for eid
+        idp = ['t2weighted']
     visits = [2]
     impute_flag = True
     if task_name=='paintype':
@@ -58,14 +72,16 @@ def check_eid(task_name='paintype'):
 # running
 if __name__=="__main__":
     res_ls = []
-    for d in ['paincontrol', 'paintype', 'digestive']:
+
+    for d in ['digestive', 'paincontrol', 'paintype']:
         print(d)
-        df = load_connectivity(task_name=d)
+        # df = load_connectivity(task_name=d)
+        df = load_connectivity(task_name=d, add_questionnaire=False, add_idp=False)
         print(df.shape)
         # cv classification
         df_res = cv_classify(df, classifier='rforest', cv_fold=4, scaler=True, balance=True)
         # save result
-        df_res['task name'] = d
+        df_res['dataset'] = d
         res_ls.append(df_res)
     # performance df
     df_perf = pd.concat(res_ls)

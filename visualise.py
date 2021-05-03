@@ -39,14 +39,22 @@ def plot_compare(df, save_name='paintype', comp_var='IDP'):
     plot_ls = [c for c in df.columns if 'test_' in c]
     for i, c in enumerate(plot_ls):
         g = sns.barplot(x=df[comp_var], y=df[c], palette="rocket", ax=axes[i])
+        for bar in g.patches:
+            g.annotate(format(bar.get_height(), '.3f'),
+                   (bar.get_x() + bar.get_width() / 2,
+                    bar.get_height()), ha='center', va='center',
+                   size=11, xytext=(0, 5),
+                   textcoords='offset points')
         plt.xticks(rotation=90)
         axes[i].axhline(np.mean(df[c]), color='k', clip_on=False)
         axes[i].set_ylabel(c)
         dfc_diff = df[c].max() - df[c].min()
         axes[i].set_ylim(df[c].mean()-0.5*dfc_diff, df[c].mean()+0.5*dfc_diff)
+
     # save
     sns.despine(bottom=True)
     plt.savefig(f'./model_performance/figs/{save_name}_compare.png', bbox_inches='tight')
+
 
 # running
 if __name__=="__main__":
@@ -64,10 +72,20 @@ if __name__=="__main__":
             plot_compare(df, save_name=d+'_QSIDP', comp_var=comp_var)
     elif plot_type=='clf':
         # plot all clf compare
-        preproc = 'all_data'
+        # preproc = 'all_data'
+        preproc = 'all_data_connectivity'
         comp_var = 'classifier'
         df_tmp = pd.read_csv(f'./model_performance/{preproc}_classifiers.csv')#classifiers x datasets (3) x 10cv
         for d in ['paincontrol', 'paintype', 'digestive']:
             df_tmpd = df_tmp[df_tmp['dataset']==d]
             df = sort_compare(df_tmpd, comp_var=comp_var, criteria='accuracy', sort_top=len(np.unique(df_tmpd[comp_var])))
             plot_compare(df, save_name=d+'_'+preproc, comp_var=comp_var)
+    elif plot_type=='dataset':
+        # plot single classfier with all datasets
+        fname = 'all_connectivity_qsidp'
+        # fname = 'all_connectivity_qs'
+        # fname = 'all_connectivity_idp'
+        # fname = 'all_connectivity'
+        df_tmp = pd.read_csv(f'./model_performance/output/{fname}.csv')
+        comp_var = 'dataset'
+        plot_compare(df_tmp, save_name=fname, comp_var=comp_var)

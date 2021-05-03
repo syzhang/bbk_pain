@@ -20,6 +20,7 @@ from imblearn.under_sampling import RandomUnderSampler
 from compare_control import *
 from clean_questions import *
 from predict_digestive import *
+from connectivity_mat import load_connectivity
 
 names = ["LGB", "Nearest Neighbors", "Linear SVM", 
          "Decision Tree", "Random Forest", 
@@ -44,14 +45,21 @@ idp = 'all'
 question_visits = [2]
 impute_flag = True # fillna w median
 # impute_flag = False # dropna
-# umap_flag = True # use umap to reduce dimension
+data_used = 'connectivity' # idp
 
 # load all datasets
-datasets = [
-            load_patient_grouped(questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=impute_flag, patient_grouping='simplified'), # pain type
-            load_digestive_data(label_type='severe', questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=impute_flag), # digestive
-            load_patient_matched(questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=impute_flag) # patient control
-            ]
+if data_used == 'idp':
+    datasets = [
+                load_patient_grouped(questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=impute_flag, patient_grouping='simplified'), # pain type
+                load_digestive_data(label_type='severe', questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=impute_flag), # digestive
+                load_patient_matched(questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=impute_flag) # patient control
+                ]
+elif data_used == 'connectivity':
+    datasets = [
+                load_connectivity(task_name='paintype'), # pain type
+                load_connectivity(task_name='digestive'), # digestive
+                load_connectivity(task_name='paincontrol') # patient control
+                ]
 dataset_names = ['paintype', 'digestive', 'paincontrol']
 
 res_ls = []
@@ -95,4 +103,4 @@ for ds_cnt, ds in enumerate(datasets):
 # performance df
 df_perf = pd.concat(res_ls)
 # save to csv
-df_perf.to_csv(f'./model_performance/all_data_classifiers.csv', index=None)
+df_perf.to_csv(f'./model_performance/all_data_{data_used}_classifiers.csv', index=None)
