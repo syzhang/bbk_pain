@@ -87,27 +87,33 @@ def load_qscode(questionnaire='all', idp=None):
     df_out = pd.concat([df_qs, df_idp])
     return df_out
 
-def disease_label(df_subjects, visits=[2], grouping='simplified'):
+def disease_label(df, visits=[2], grouping='simplified'):
     """create disease label df"""
     from disease_type import extract_disease
     # different grouping
     if grouping == 'simplified':
         df_disease_group = pd.read_csv('./bbk_codes/disease_code_simplified.csv')
+    elif grouping == 'detailed':
+        df_disease_group = pd.read_csv('./bbk_codes/disease_code.csv')
     else:
         df_disease_group = pd.read_csv('./bbk_codes/disease_code_grouped.csv')
+    # drop duplicates to avoid merging issues
+    if df.index.name == 'eid':
+        df_dropd = df[~df.index.duplicated()]
+    elif 'eid' in df:
+        df_dropd = df[~df['eid'].duplicated()]
+    else:
+        raise ValueError('eid not present.')
     # iterate diseases
+    df_disease_label = []
     for i, r in df_disease_group.iterrows():
-        # print(i,r['disease'])
-        df_tmp = extract_disease(df_subjects, r['code'], visit=visits)
+        df_tmp = extract_disease(df_dropd, r['code'], visit=visits)
         df_tmp.replace(np.nan, 0.0, inplace=True)
         # rename column to disease
         df_tmp.rename(columns={df_tmp.columns[0]: r['disease']}, inplace=True)
         # merge
-        if i == 0:
-            df_disease_label = df_tmp
-        else:
-            df_disease_label = df_disease_label.join(df_tmp, on='eid')
-    return df_disease_label
+        df_disease_label.append(df_tmp)
+    return pd.concat(df_disease_label,axis=1)
 
 def exclude_multidisease(df, df_label):
     """exclude subjects with multiple diseases"""

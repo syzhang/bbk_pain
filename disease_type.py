@@ -26,7 +26,8 @@ def extract_disease(df, disease_code, visit=None):
             # find matching disease
             disease_tag = []
             # if type(disease_code) is list:
-            if len(disease_code)> 10:
+            # if len(disease_code)> 10:
+            if isinstance(disease_code, str) and disease_code.startswith('['):
                 dcode_float = [float(i) for i in list(disease_code[1:-2].split(','))]
             else:
                 dcode_float = [float(disease_code)]
@@ -85,6 +86,18 @@ def group_disease_id(df, df_disease_group, visits=[0,1,2,3], save=True, save_nam
     if save:
         df_out.to_csv(f'../output/{save_name}.csv')
     return df_out
+
+def generate_clinical_vars():
+    """generate clinical variables from bbk codes"""
+    all_code = []
+    for f in os.listdir('./bbk_codes/'):
+        if not f.startswith('disease_code_'):
+            print(f)
+            df_tmp = pd.read_csv('./bbk_codes/'+f)
+            all_code.append(df_tmp.code.astype(int))
+    df_code = np.concatenate(all_code)
+    dfc = pd.DataFrame(df_code)
+    dfc.to_csv('../funpack_cfg/clinical_idp_variables.txt', header=None, index=None)
 
 # running
 if __name__=="__main__":

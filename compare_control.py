@@ -45,7 +45,7 @@ def load_patient_matched(questionnaire='all', idp='all', question_visits=[2], im
     # load data
     df_disease = load_patients(visits=[2], single_disease=True)
     df_disease['label'] = 1
-    df_matched = pd.read_csv('../funpack_cfg/qsidp_subjs_control_allvisits_matched.tsv', sep='\t')
+    df_matched = pd.read_csv('../funpack_cfg/qsidp_subjs_control_visit2_matched.tsv', sep='\t')
     df_matched['label'] = 0
     dfs = pd.concat([df_disease, df_matched])
     print(f'Patients={df_disease.shape[0]}, controls={df_matched.shape[0]}')
@@ -68,8 +68,8 @@ def load_patient_matched(questionnaire='all', idp='all', question_visits=[2], im
 
 # running
 if __name__=="__main__":
-    # generate list of matched control
-    # df_control = pd.read_csv('../funpack_cfg/qsidp_subjs_control_allvisits_extended.tsv', sep='\t')
+    # # generate list of matched control
+    # df_control = pd.read_csv('../funpack_cfg/qsidp_subjs_control_visit2_extended.tsv', sep='\t')
     # df_disease = load_patients(visits=[2], single_disease=True)
     # match_ls = extract_control(df_control, df_disease, save_csv=True)
 
