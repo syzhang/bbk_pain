@@ -8,7 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from clean_questions import * 
 
-def extract_control(df_control, df_disease, save_csv=True):
+def extract_control(df_control, df_disease, save_csv=True, save_name='matched_control'):
     """extract age/sex matched control to disease group"""
     # use age/sex only
     dfp = df_disease[['31-0.0', '21003-2.0', 'eid']]
@@ -24,7 +24,7 @@ def extract_control(df_control, df_disease, save_csv=True):
     # save 
     df_matched = pd.Series(matched)
     if save_csv:
-        df_matched.to_csv('../funpack_cfg/subjs_control_visit2_matched.csv', header=None, index=None)
+        df_matched.to_csv('./data/{save_name}.csv', header=None, index=None)
     return matched
 
 def load_patients(visits=[2], single_disease=True):

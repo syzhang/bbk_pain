@@ -45,14 +45,15 @@ idp = 'all'
 question_visits = [2]
 impute_flag = True # fillna w median
 # impute_flag = False # dropna
-data_used = 'connectivity' # idp
+data_used = 'qsidp' # 'connectivity' 
 
 # load all datasets
-if data_used == 'idp':
+if data_used == 'qsidp':
     datasets = [
-                load_patient_grouped(questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=impute_flag, patient_grouping='simplified'), # pain type
+                load_patient_grouped(pain_status='all', questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=impute_flag, patient_grouping='simplified'), # pain type (all)
+                load_patient_grouped(pain_status='must', questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=impute_flag, patient_grouping='simplified'), # pain type (must have pain)
                 load_digestive_data(label_type='severe', questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=impute_flag), # digestive
-                load_patient_matched(questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=impute_flag) # patient control
+                # load_patient_matched(questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=impute_flag) # patient control
                 ]
 elif data_used == 'connectivity':
     datasets = [
@@ -60,7 +61,7 @@ elif data_used == 'connectivity':
                 load_connectivity(task_name='digestive'), # digestive
                 load_connectivity(task_name='paincontrol') # patient control
                 ]
-dataset_names = ['paintype', 'digestive', 'paincontrol']
+dataset_names = ['paintype_all', 'paintype_must', 'digestive']#, 'paincontrol']
 
 res_ls = []
 # iterate over datasets
@@ -103,4 +104,4 @@ for ds_cnt, ds in enumerate(datasets):
 # performance df
 df_perf = pd.concat(res_ls)
 # save to csv
-df_perf.to_csv(f'./model_performance/all_data_{data_used}_classifiers.csv', index=None)
+df_perf.to_csv(f'./model_performance/output/compare_classifiers_{data_used}.csv', index=None)

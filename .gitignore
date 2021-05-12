@@ -10,3 +10,4 @@ saved_models/
 *.zip
 examples/
 model_performance/output/
+data/

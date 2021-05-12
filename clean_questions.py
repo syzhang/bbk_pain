@@ -354,12 +354,15 @@ def match_question(q_codes, questionnaire='all', idp=None):
         question_ls.append(question)
     return question_ls
 
-def load_patient_grouped(questionnaire='all', idp='all', question_visits=[2], imputed=True, patient_grouping='simplified'):
+def load_patient_grouped(pain_status='all', questionnaire='all', idp='all', question_visits=[2], imputed=True, patient_grouping='simplified'):
     """load patient grouped and impute"""
-    # main questionnaire file
-    qs_path = os.path.join('..', 'funpack_cfg', 'qsidp_subjs_disease_visit2_extended.tsv')
     # load subjects
-    df_subjects = pd.read_csv(qs_path, sep='\t')
+    if pain_status == 'all': # no necessarily have pain
+        df_subjects = pd.read_csv('./data/qsidp_patients.csv')
+    elif pain_status == 'must': # condition and pain
+        df_subjects = pd.read_csv('./data/qsidp_patients_pain.csv')
+    elif pain_status == 'restricted': # pain site restricted to condition
+        df_subjects = pd.read_csv('./data/qsidp_patients.csv')
     # create disease label
     df_disease_label = disease_label(df_subjects, visits=[2], grouping=patient_grouping)
     # load question code
@@ -393,16 +396,16 @@ def load_patient_grouped(questionnaire='all', idp='all', question_visits=[2], im
 # running
 if __name__=="__main__":
     # load questionnaire codes
-    # question_visits = [0,1,2]
     question_visits = [2]
     questionnaire = 'all'
     idp = 'all'
+    pain_status = 'must'
     # load data
-    dff_imputed = load_patient_grouped(questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=True, patient_grouping='simplified')
+    dff_imputed = load_patient_grouped(pain_status=pain_status, questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=True, patient_grouping='simplified')
 
     # basic classification
     classifiers = ['rforest']#'dtree', 
     for c in classifiers:
         # basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype', scaler=True, balance=True)
-        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype_qs', scaler=True, balance=True)
+        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype_must', scaler=True, balance=True)
         # dfr = cv_classify(dff_imputed, classifier=c, cv_fold=10, questionnaire=questionnaire, idp=idp)

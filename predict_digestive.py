@@ -9,7 +9,8 @@ from clean_questions import *
 
 def load_digestive_data(label_type='severe', questionnaire='all', idp='all', question_visits=[2], imputed=True, nan_percent=0.9):
     """load digestive_after_imaging dataset"""
-    df = pd.read_csv('../funpack_cfg/qsidp_subjs_digestive_imaging.tsv', sep='\t')
+    # df = pd.read_csv('../funpack_cfg/qsidp_subjs_digestive_imaging.tsv', sep='\t')
+    df = pd.read_csv('./data/qsidp_digestive.csv')
     print(df.shape)
     # create label
     dfq = pain_label(df, label_type=label_type)
@@ -83,7 +84,6 @@ def pain_wideness(df):
 # running
 if __name__=="__main__":
     # load questionnaire codes
-    # question_visits = [0,1,2]
     question_visits = [2]
     questionnaire = 'all'
     idp = 'all'#['t1vols','taskfmri']#
