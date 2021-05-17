@@ -32,18 +32,22 @@ def load_outputs(task_name='paintype'):
     df.drop_duplicates(inplace=True)
     return df
 
-def plot_compare(df, save_name='paintype', comp_var='IDP'):
+def plot_compare(df, save_name='paintype', comp_var='IDP', hue_var=None):
     """plot model comparison"""
     # plot
-    f, axes = plt.subplots(3, 1, figsize=(8, 7), sharex=True)
+    f, axes = plt.subplots(3, 1, figsize=(9, 7), sharex=True)
     plot_ls = [c for c in df.columns if 'test_' in c]
     for i, c in enumerate(plot_ls):
-        g = sns.barplot(x=df[comp_var], y=df[c], palette="rocket", ax=axes[i])
+        if hue_var:
+            g = sns.barplot(x=df[comp_var], y=df[c], hue=df[hue_var], palette="Paired", ax=axes[i])
+            g.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        else:
+            g = sns.barplot(x=df[comp_var], y=df[c], palette="Paired", ax=axes[i])
         for bar in g.patches:
-            g.annotate(format(bar.get_height(), '.3f'),
+            g.annotate(f'{bar.get_height()*100:.0f}',
                    (bar.get_x() + bar.get_width() / 2,
                     bar.get_height()), ha='center', va='center',
-                   size=11, xytext=(0, 5),
+                   size=9, xytext=(0, 5),
                    textcoords='offset points')
         plt.xticks(rotation=90)
         axes[i].axhline(np.mean(df[c]), color='k', clip_on=False)
@@ -73,19 +77,33 @@ if __name__=="__main__":
     elif plot_type=='clf':
         # plot all clf compare
         # preproc = 'all_data'
-        preproc = 'all_data_connectivity'
+        preproc = 'compare_classifiers_qsidp' #'all_data_connectivity'
         comp_var = 'classifier'
-        df_tmp = pd.read_csv(f'./model_performance/{preproc}_classifiers.csv')#classifiers x datasets (3) x 10cv
-        for d in ['paincontrol', 'paintype', 'digestive']:
+        df_tmp = pd.read_csv(f'./model_performance/output/{preproc}.csv')#classifiers x datasets (3) x 10cv
+        # for d in ['paincontrol', 'paintype', 'digestive']:
+        for d in np.unique(df_tmp['dataset']):
             df_tmpd = df_tmp[df_tmp['dataset']==d]
-            df = sort_compare(df_tmpd, comp_var=comp_var, criteria='accuracy', sort_top=len(np.unique(df_tmpd[comp_var])))
+            df = sort_compare(df_tmpd, comp_var=comp_var, criteria='roc_auc', sort_top=len(np.unique(df_tmpd[comp_var])))
             plot_compare(df, save_name=d+'_'+preproc, comp_var=comp_var)
     elif plot_type=='dataset':
-        # plot single classfier with all datasets
-        fname = 'all_connectivity_qsidp'
-        # fname = 'all_connectivity_qs'
-        # fname = 'all_connectivity_idp'
-        # fname = 'all_connectivity'
-        df_tmp = pd.read_csv(f'./model_performance/output/{fname}.csv')
         comp_var = 'dataset'
-        plot_compare(df_tmp, save_name=fname, comp_var=comp_var)
+        # plot single classfier with all datasets
+        all_ls = []
+        clf = 'lgb'
+        # clf = 'rforest'
+        fpath = f'./model_performance/output/{clf}/'
+        conn_ls = os.listdir(fpath)
+
+        for conn in conn_ls:
+            fpath_conn = os.path.join(fpath, conn)
+            for f in os.listdir(fpath_conn):
+                if f.startswith('all_'):
+                    fname = f
+                    df_tmp = pd.read_csv(os.path.join(fpath_conn,fname))
+                    # print(fname,df_tmp['test_roc_auc'].mean())
+                    # plot_compare(df_tmp, save_name=fname, comp_var=comp_var)
+                    # combine to single
+                    df_tmp['features'] = ('_').join(fname.split('_')[1:])
+                    all_ls.append(df_tmp)
+            dff = pd.concat(all_ls)
+            plot_compare(dff, save_name=f'feature_{clf}_{conn}', comp_var=comp_var, hue_var='features')

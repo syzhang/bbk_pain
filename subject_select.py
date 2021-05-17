@@ -102,25 +102,37 @@ def select_pain_minus(save=True):
         df_out.to_csv('./data/qsidp_pain_minus.csv', index=None)
     return df_out
 
-def pain_minus_matched():
+def pain_minus_matched(save=True):
     """age/gender match pain minus to pain plus"""
     df_disease = pd.read_csv('./data/qsidp_pain_plus.csv')
     df_control = pd.read_csv('./data/qsidp_pain_minus.csv')
-    df_out = extract_control(df_control, df_disease, save_csv=True, save_name='qsidp_pain_minus_matched')
+    df_subjs = extract_control(df_control, df_disease, save_csv=True, save_name='subjs_pain_minus_matched')
+    # extract subjs
+    df_out = df_control[df_control['eid'].isin(df_subjs)]
+    if save:
+        df_out.to_csv('./data/qsidp_pain_minus_matched.csv', index=None)
     return df_out
 
-def patients_matched():
+def patients_matched(save=True):
     """age/gender match controls to patients"""
     df_disease = pd.read_csv('./data/qsidp_patients.csv')
     df_control = pd.read_csv('./data/qsidp_controls.csv')
-    df_out = extract_control(df_control, df_disease, save_csv=True, save_name='qsidp_patients_matched')
+    df_subjs = extract_control(df_control, df_disease, save_csv=True, save_name='subjs_patients_matched')
+    # extract subjs
+    df_out = df_control[df_control['eid'].isin(df_subjs)]
+    if save:
+        df_out.to_csv('./data/qsidp_patients_matched.csv', index=None)
     return df_out
 
-def patients_pain_matched():
+def patients_pain_matched(save=True):
     """age/gender match controls to patients_pain"""
     df_disease = pd.read_csv('./data/qsidp_patients_pain.csv')
     df_control = pd.read_csv('./data/qsidp_controls.csv')
-    df_out = extract_control(df_control, df_disease, save_csv=True, save_name='qsidp_patients_pain_matched')
+    df_subjs = extract_control(df_control, df_disease, save_csv=True, save_name='subjs_patients_pain_matched')
+    # extract subjs
+    df_out = df_control[df_control['eid'].isin(df_subjs)]
+    if save:
+        df_out.to_csv('./data/qsidp_patients_pain_matched.csv', index=None)
     return df_out
 
 def select_controls(save=True):
@@ -190,6 +202,7 @@ def check_count(df, field_ls, field_status):
 # running
 if __name__=="__main__":
     # df = select_digestive()
+    df = pain_minus_matched()
     # df = patients_matched()
-    df = patients_pain_matched()
+    # df = patients_pain_matched()
     print(df.shape)

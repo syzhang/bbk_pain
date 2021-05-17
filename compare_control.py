@@ -22,33 +22,28 @@ def extract_control(df_control, df_disease, save_csv=True, save_name='matched_co
                     matched.append(rc['eid'])
                     break
     # save 
-    df_matched = pd.Series(matched)
+    df_matched = pd.Series(matched).astype(int)
     if save_csv:
-        df_matched.to_csv('./data/{save_name}.csv', header=None, index=None)
+        df_matched.to_csv(f'./data/{save_name}.csv', header=None, index=None)
     return matched
 
-def load_patients(visits=[2], single_disease=True):
-    """load patients removing multi diseases"""
-    # from clean_questions import exclude_multidisease, disease_label
-    dfp = pd.read_csv(os.path.join('..', 'funpack_cfg', 'qsidp_subjs_disease_visit2_extended.tsv'), sep='\t')  
-    # load disease
-    df_disease_label = disease_label(dfp, visits=visits, grouping='simplified')
-    # exclude multi diseases subjects
-    df_exclude, df_label_exclude = exclude_multidisease(dfp, df_disease_label)
-    if single_disease==True:
-        return df_exclude
-    else:
-        return df_qs
-
-def load_patient_matched(questionnaire='all', idp='all', question_visits=[2], imputed=True):
-    """prepare patient/matched control set for classify"""
+def load_pain_matched(pain_status='plus', questionnaire='all', idp='all', question_visits=[2], imputed=True):
+    """prepare pain/matched control set for classify"""
     # load data
-    df_disease = load_patients(visits=[2], single_disease=True)
-    df_disease['label'] = 1
-    df_matched = pd.read_csv('../funpack_cfg/qsidp_subjs_control_visit2_matched.tsv', sep='\t')
+    if pain_status == 'plus': # pain plus/minus
+        df_pain = pd.read_csv('./data/qsidp_pain_plus.csv')
+        df_matched = pd.read_csv('./data/qsidp_pain_minus_matched.csv')
+    elif pain_status == 'all': # patients/patients matched
+        df_pain = pd.read_csv('./data/qsidp_patients.csv')
+        df_matched = pd.read_csv('./data/qsidp_patients_matched.csv')
+    elif pain_status == 'must': # patients with pain/matched
+        df_pain = pd.read_csv('./data/qsidp_patients_pain.csv')
+        df_matched = pd.read_csv('./data/qsidp_patients_pain_matched.csv')
+
+    df_pain['label'] = 1
     df_matched['label'] = 0
-    dfs = pd.concat([df_disease, df_matched])
-    print(f'Patients={df_disease.shape[0]}, controls={df_matched.shape[0]}')
+    dfs = pd.concat([df_pain, df_matched])
+    print(f'Patients={df_pain.shape[0]}, controls={df_matched.shape[0]}')
     # extract questions/idps
     qs = load_qscode(questionnaire=questionnaire, idp=idp)
     # extract questionnaire of interest
@@ -68,19 +63,15 @@ def load_patient_matched(questionnaire='all', idp='all', question_visits=[2], im
 
 # running
 if __name__=="__main__":
-    # # generate list of matched control
-    # df_control = pd.read_csv('../funpack_cfg/qsidp_subjs_control_visit2_extended.tsv', sep='\t')
-    # df_disease = load_patients(visits=[2], single_disease=True)
-    # match_ls = extract_control(df_control, df_disease, save_csv=True)
 
     # patient/matched control classify
     questionnaire = 'all'
     idp = 'all'
-    dff_imputed = load_patient_matched(questionnaire=questionnaire, idp=idp, question_visits=[2], imputed=True)
+    dff_imputed = load_pain_matched(pain_status='all', questionnaire=questionnaire, idp=idp, question_visits=[2], imputed=True)
     # basic classification
     classifiers = ['rforest']#'dtree', 
     for c in classifiers:
         basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp,
-        save_name='paincontrol_qs')
+        save_name='paincontrol_qsidp')
 
     

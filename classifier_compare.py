@@ -45,7 +45,8 @@ idp = 'all'
 question_visits = [2]
 impute_flag = True # fillna w median
 # impute_flag = False # dropna
-data_used = 'qsidp' # 'connectivity' 
+# data_used = 'qsidp' # 'connectivity' 
+data_used = 'connectivity' 
 
 # load all datasets
 if data_used == 'qsidp':
@@ -57,9 +58,10 @@ if data_used == 'qsidp':
                 ]
 elif data_used == 'connectivity':
     datasets = [
-                load_connectivity(task_name='paintype'), # pain type
+                load_connectivity(task_name='paintype_all'), # pain type
+                load_connectivity(task_name='paintype_must'), # pain type
                 load_connectivity(task_name='digestive'), # digestive
-                load_connectivity(task_name='paincontrol') # patient control
+                # load_connectivity(task_name='paincontrol') # patient control
                 ]
 dataset_names = ['paintype_all', 'paintype_must', 'digestive']#, 'paincontrol']
 

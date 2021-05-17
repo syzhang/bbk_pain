@@ -95,6 +95,8 @@ def disease_label(df, visits=[2], grouping='simplified'):
         df_disease_group = pd.read_csv('./bbk_codes/disease_code_simplified.csv')
     elif grouping == 'detailed':
         df_disease_group = pd.read_csv('./bbk_codes/disease_code.csv')
+    elif grouping == 'select':
+        df_disease_group = pd.read_csv('./bbk_codes/disease_code_select.csv')
     else:
         df_disease_group = pd.read_csv('./bbk_codes/disease_code_grouped.csv')
     # drop duplicates to avoid merging issues
@@ -267,6 +269,9 @@ def cv_classify(df, classifier='dtree', cv_fold=10, scaler=True, balance=True):
     elif classifier == 'rforest':
         from sklearn.ensemble import RandomForestClassifier
         clf = RandomForestClassifier(max_depth=5)
+    elif classifier == 'lgb':
+        import lightgbm as lgb
+        clf = lgb.LGBMClassifier(n_jobs=-1)
     # cv result
     cv_results = cross_validate(clf, X, y, cv=cv_fold, return_train_score=False, scoring=('accuracy', 'f1', 'roc_auc'))
     df_res = pd.DataFrame(cv_results)
@@ -384,8 +389,6 @@ def load_patient_grouped(pain_status='all', questionnaire='all', idp='all', ques
         print(f'Questionnaires from visits {question_visits} shape={dff.shape}')
         dff_imputed = impute_qs(dff, freq_fill='median', nan_percent=0.9, transform=False)
         print(f'After imputation shape={dff_imputed.shape}')
-        # dff_imputed = dff_imputed.dropna(how='all', axis=1)
-        # print(f'Drop all nan cols shape={dff_imputed.shape}')
     elif imputed==False:
         dff_imputed = dff.dropna()
     else:
