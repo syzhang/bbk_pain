@@ -367,7 +367,7 @@ def load_patient_grouped(pain_status='all', questionnaire='all', idp='all', ques
     elif pain_status == 'must': # condition and pain
         df_subjects = pd.read_csv('./data/qsidp_patients_pain.csv')
     elif pain_status == 'restricted': # pain site restricted to condition
-        df_subjects = pd.read_csv('./data/qsidp_patients.csv')
+        df_subjects = pd.read_csv('./data/qsidp_patients_pain_restricted.csv')
     # create disease label
     df_disease_label = disease_label(df_subjects, visits=[2], grouping=patient_grouping)
     # load question code
@@ -402,7 +402,7 @@ if __name__=="__main__":
     question_visits = [2]
     questionnaire = 'all'
     idp = 'all'
-    pain_status = 'must'
+    pain_status = 'restricted'# 'must', 'all'
     # load data
     dff_imputed = load_patient_grouped(pain_status=pain_status, questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=True, patient_grouping='simplified')
 
@@ -410,5 +410,5 @@ if __name__=="__main__":
     classifiers = ['rforest']#'dtree', 
     for c in classifiers:
         # basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype', scaler=True, balance=True)
-        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype_must', scaler=True, balance=True)
+        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype_restricted', scaler=True, balance=True)
         # dfr = cv_classify(dff_imputed, classifier=c, cv_fold=10, questionnaire=questionnaire, idp=idp)

@@ -39,6 +39,9 @@ def load_pain_matched(pain_status='plus', questionnaire='all', idp='all', questi
     elif pain_status == 'must': # patients with pain/matched
         df_pain = pd.read_csv('./data/qsidp_patients_pain.csv')
         df_matched = pd.read_csv('./data/qsidp_patients_pain_matched.csv')
+    elif pain_status == 'restricted': # patients with restricted pain/matched
+        df_pain = pd.read_csv('./data/qsidp_patients_pain_restricted.csv')
+        df_matched = pd.read_csv('./data/qsidp_patients_pain_restricted_matched.csv')
 
     df_pain['label'] = 1
     df_matched['label'] = 0

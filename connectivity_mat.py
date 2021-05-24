@@ -83,12 +83,16 @@ def check_eid(task_name='paintype', add_questionnaire=False, add_idp=False):
         dff_imputed = load_patient_grouped(pain_status='all', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag, patient_grouping='simplified')
     elif task_name=='paintype_must':
         dff_imputed = load_patient_grouped(pain_status='must', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag, patient_grouping='simplified')
+    elif task_name=='paintype_restricted':
+        dff_imputed = load_patient_grouped(pain_status='restricted', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag, patient_grouping='simplified')
     elif task_name=='digestive':
         dff_imputed = load_digestive_data(label_type='severe', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag)
     elif task_name=='paincontrol_all':
         dff_imputed = load_pain_matched(pain_status='all', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag)
     elif task_name=='paincontrol_must':
         dff_imputed = load_pain_matched(pain_status='must', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag)
+    elif task_name=='paincontrol_restricted':
+        dff_imputed = load_pain_matched(pain_status='restricted', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag)
     return dff_imputed
 
 # running
@@ -105,7 +109,7 @@ if __name__=="__main__":
         for qs_id in [True, False]:
             for idp_id in [True, False]:
                 res_ls = []
-                for d in ['digestive', 'paintype_all', 'paintype_must', 'paincontrol_all', 'paincontrol_must']:
+                for d in ['digestive', 'paintype_all', 'paintype_must', 'paintype_restricted', 'paincontrol_all', 'paincontrol_must', 'paincontrol_restricted']:
                     print(f'conntype={conn_type}, conn={conn_id}, qs={qs_id}, idp={idp_id}, d={d}')
                     # df = load_connectivity(task_name=d)
                     df = load_connectivity(task_name=d, conn_type=conn_type, add_questionnaire=qs_id, add_idp=idp_id, add_conn=conn_id)

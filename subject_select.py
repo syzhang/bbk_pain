@@ -34,6 +34,53 @@ def select_patients_pain(save=True):
         df_out.to_csv('./data/qsidp_patients_pain.csv', index=None)
     return df_out
 
+def select_patients_pain_restricted(save=True):
+    """select patients with conditions and pain restricted to body sites"""
+    # load patients with pain
+    df_pp = pd.read_csv('./data/qsidp_patients_pain.csv')
+    # hard coded condition-pain pairs
+    df_rp0 = restrict_pain_to_disease(df_pp, disease_code=1265, cwp_code=[3799, 4067]) # migraine, 3+m headache or facial pain
+    df_rp1 = restrict_pain_to_disease(df_pp, disease_code=1465, cwp_code=[3733, 3414, 3404]) # OA, 3+m knee/hip/neck or shoulder pain
+    df_rp2 = restrict_pain_to_disease(df_pp, disease_code=1464, cwp_code=[3733, 3414, 3404]) # RA, 3+m knee/hip/neck or shoulder pain
+    df_rp3 = restrict_pain_to_disease(df_pp, disease_code=1477, cwp_code=[3733, 3414, 3404]) # psoriatic arthropathy, 3+m knee/hip/neck or shoulder pain
+    df_rp4 = restrict_pain_to_disease(df_pp, disease_code=1538, cwp_code=[3733, 3414, 3404]) # psoriatic arthropathy, 3+m knee/hip/neck or shoulder pain
+    df_rp5 = restrict_pain_to_disease(df_pp, disease_code=1154, cwp_code=3741) # IBS, 3+m stomach pain
+    df_rp6 = restrict_pain_to_disease(df_pp, disease_code=1294, cwp_code=3571) # back problem, 3+m back pain
+    df_rp7 = restrict_pain_to_disease(df_pp, disease_code=1478, cwp_code=3571) # cervical spondylosis, 3+m back pain
+    df_rp8 = restrict_pain_to_disease(df_pp, disease_code=1311, cwp_code=3571) # spine arthritis/spondylitis, 3+m back pain
+    df_rp9 = restrict_pain_to_disease(df_pp, disease_code=1312, cwp_code=3571) # prolapsed disc/slipped disc, 3+m back pain
+    df_rp10 = restrict_pain_to_disease(df_pp, disease_code=1532, cwp_code=3571) # disc problem, 3+m back pain
+    df_rp11 = restrict_pain_to_disease(df_pp, disease_code=1533, cwp_code=3571) # disc degeneration, 3+m back pain
+    df_rp12 = restrict_pain_to_disease(df_pp, disease_code=1534, cwp_code=3571) # back pain, 3+m back pain
+    df_rp13 = restrict_pain_to_disease(df_pp, disease_code=1542, cwp_code=2956) # fibromyalgia, 3+m general pain
+    # concat all
+    df_out = pd.concat([df_rp0, df_rp1,df_rp2, df_rp3, df_rp4, df_rp5, df_rp6, df_rp7, df_rp8, df_rp9, df_rp10, df_rp11, df_rp12, df_rp13])
+    df_out.drop_duplicates(subset='eid', inplace=True)
+    # save
+    if save:
+        df_out.to_csv('./data/qsidp_patients_pain_restricted.csv', index=None)
+    return df_out
+
+def restrict_pain_to_disease(df, disease_code, cwp_code):
+    """returns pain site restricted to disease"""
+    dfd_tmp = extract_disease(df, int(disease_code), visit=[2]) # disease
+    dfd_eid = pd.Series(dfd_tmp[dfd_tmp.values==1].index)
+    # loop through cwps
+    if isinstance(cwp_code, list):
+        cols = []
+        for cwp in cwp_code:
+            cols_tmp = check_field(df, int(cwp), visit=2) # cwp
+            cols += cols_tmp
+    else:
+        cols = check_field(df, int(cwp_code), visit=2) # cwp
+    # extract patients from df
+    dfp_tmp = check_count(df, cols, 1)
+    dfp_tmp.drop_duplicates(subset='eid', inplace=True)
+    dfp_eid = dfp_tmp['eid']
+    eids = dfd_eid[dfd_eid.isin(dfp_eid)]
+    df_out = df[df['eid'].isin(eids)]
+    return df_out
+
 def cwp_positive(df, positive=True):
     """return subset of subjects with pain"""
     # restrict to those with Pain type(s) experienced in last month
@@ -54,20 +101,6 @@ def cwp_positive(df, positive=True):
     else:
         df_ppp = df_plm
     df_out = df_ppp.drop_duplicates('eid')
-    return df_out
-
-def select_patients_pain_restricted(save=True):
-    """select patients with conditions and pain restricted to body sites"""
-    # load patients with pain
-    df_pp = pd.read_csv('./data/qsidp_patients_pain.csv')
-    # hard coded condition-pain pairs
-    dfd_tmp = extract_disease(df_pp, 1265, visit=[2]) # migraine
-    dfd_eid = pd.Series(dfd_tmp[dfd_tmp.values==1].index)
-    cols = check_field(df_pp, 3799, visit=2) # 3+m headache
-    dfp_tmp = check_count(df_pp, cols, 1)
-    dfp_eid = dfp_tmp['eid']
-    eids = dfd_eid[dfd_eid.isin(dfp_eid)]
-    df_out = df_pp[df_pp['eid'].isin(eids)]
     return df_out
     
 def select_pain_plus(save=True):
@@ -133,6 +166,17 @@ def patients_pain_matched(save=True):
     df_out = df_control[df_control['eid'].isin(df_subjs)]
     if save:
         df_out.to_csv('./data/qsidp_patients_pain_matched.csv', index=None)
+    return df_out
+
+def patients_pain_restricted_matched(save=True):
+    """age/gender match controls to patients_pain_restricted"""
+    df_disease = pd.read_csv('./data/qsidp_patients_pain_restricted.csv')
+    df_control = pd.read_csv('./data/qsidp_controls.csv')
+    df_subjs = extract_control(df_control, df_disease, save_csv=True, save_name='subjs_patients_pain_restricted_matched')
+    # extract subjs
+    df_out = df_control[df_control['eid'].isin(df_subjs)]
+    if save:
+        df_out.to_csv('./data/qsidp_patients_pain_restricted_matched.csv', index=None)
     return df_out
 
 def select_controls(save=True):
@@ -202,7 +246,9 @@ def check_count(df, field_ls, field_status):
 # running
 if __name__=="__main__":
     # df = select_digestive()
-    df = pain_minus_matched()
+    # df = pain_minus_matched()
     # df = patients_matched()
     # df = patients_pain_matched()
+    # df = select_patients_pain_restricted()
+    df = patients_pain_restricted_matched()
     print(df.shape)

@@ -89,8 +89,8 @@ if __name__=="__main__":
         comp_var = 'dataset'
         # plot single classfier with all datasets
         all_ls = []
-        clf = 'lgb'
-        # clf = 'rforest'
+        # clf = 'lgb'
+        clf = 'rforest'
         fpath = f'./model_performance/output/{clf}/'
         conn_ls = os.listdir(fpath)
 
