@@ -12,7 +12,7 @@ from compare_control import *
 from predict_digestive import *
 
 
-def load_connectivity(task_name='paintype', conn_type='fullcorr_100',add_questionnaire=False, add_idp=False, add_conn=True):
+def load_connectivity(task_name='paintype', dff=None, conn_type='fullcorr_100',add_questionnaire=False, add_idp=False, add_conn=True):
     """load connectivity given classification task"""
     # define connectivity path
     corr_dir = '/vols/Data/pain/asdahl/uk_biobank/suyi_extend/ukbf/rfMRI/'
@@ -31,7 +31,11 @@ def load_connectivity(task_name='paintype', conn_type='fullcorr_100',add_questio
     
     eid_ls = []
     # collect eid based on task name
-    dff = check_eid(task_name, add_questionnaire=add_questionnaire, add_idp=add_idp)
+    if task_name is not None:
+        dff = check_eid(task_name, add_questionnaire=add_questionnaire, add_idp=add_idp)
+    else:
+        dff = dff
+        
     for f in os.listdir(conmat_dir):
         if f.endswith('_0.txt'):
             # record eid
@@ -63,7 +67,7 @@ def load_connectivity(task_name='paintype', conn_type='fullcorr_100',add_questio
     df['label'] = dff_slice['label'].values 
     return df_out
 
-def check_eid(task_name='paintype', add_questionnaire=False, add_idp=False):
+def check_eid(task_name='paintype', dff_imputed=None, add_questionnaire=False, add_idp=False):
     """check eid and make labels"""
     # load settings
     questionnaire = None
@@ -93,6 +97,8 @@ def check_eid(task_name='paintype', add_questionnaire=False, add_idp=False):
         dff_imputed = load_pain_matched(pain_status='must', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag)
     elif task_name=='paincontrol_restricted':
         dff_imputed = load_pain_matched(pain_status='restricted', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag)
+    elif task_name==None and dff_imputed is not None:
+        dff_imputed = dff_imputed
     return dff_imputed
 
 # running
