@@ -9,6 +9,6 @@ saved_models/
 *.ckpt
 *.zip
 examples/
-model_performance/output/
+model_performance/output*/
 data/
 feats_out/

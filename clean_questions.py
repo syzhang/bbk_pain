@@ -98,7 +98,8 @@ def disease_label(df, visits=[2], grouping='simplified'):
     elif grouping == 'select':
         df_disease_group = pd.read_csv('./bbk_codes/disease_code_select.csv')
     else:
-        df_disease_group = pd.read_csv('./bbk_codes/disease_code_grouped.csv')
+        # df_disease_group = pd.read_csv('./bbk_codes/disease_code_grouped.csv')
+        df_disease_group = pd.read_csv('./bbk_codes/disease_code_grouped4.csv') # excluding fibro
     # drop duplicates to avoid merging issues
     if df.index.name == 'eid':
         df_dropd = df[~df.index.duplicated()]
@@ -273,11 +274,20 @@ def cv_classify(df, classifier='dtree', cv_fold=10, scaler=True, balance=True):
         import lightgbm as lgb
         clf = lgb.LGBMClassifier(n_jobs=-1)
     # cv result
-    cv_results = cross_validate(clf, X, y, cv=cv_fold, return_train_score=False, scoring=('accuracy', 'f1', 'roc_auc'))
-    df_res = pd.DataFrame(cv_results)
-    # print res
-    print(f"{cv_fold}-fold CV classification with classifier {clf}:\n"
-        f"test ROC AUC={df_res['test_roc_auc'].mean():.4f}, test accuracy={df_res['test_accuracy'].mean():.4f}, test f1={df_res['test_f1'].mean():.4f}")
+    print(len(np.unique(y)))
+    if len(np.unique(y)) <= 2: # binary
+        cv_results = cross_validate(clf, X, y, cv=cv_fold, return_train_score=False, scoring=('accuracy', 'f1', 'roc_auc'))
+        df_res = pd.DataFrame(cv_results)
+        # print res
+        print(f"{cv_fold}-fold CV classification with classifier {clf}:\n"
+            f"test ROC AUC={df_res['test_roc_auc'].mean():.4f}, test accuracy={df_res['test_accuracy'].mean():.4f}, test f1={df_res['test_f1'].mean():.4f}")
+    else:
+        cv_results = cross_validate(clf, X, y, cv=cv_fold, return_train_score=False, scoring=('accuracy', 'f1_micro', 'roc_auc_ovo'))
+        df_res = pd.DataFrame(cv_results)
+        # print res
+        print(f"{cv_fold}-fold CV classification with classifier {clf}:\n"
+            f"test ROC AUC={df_res['test_roc_auc_ovo'].mean():.4f}, test accuracy={df_res['test_accuracy'].mean():.4f}, test f1={df_res['test_f1_micro'].mean():.4f}")
+
     return df_res
 
 def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, plot_figs=True, save_plot=True, save_name='', num_importance=20, questionnaire='all', idp=None, scaler=True, balance=True):
@@ -380,8 +390,11 @@ def load_patient_grouped(pain_status='all', questionnaire='all', idp='all', ques
     # reverse one hot encoding
     label_exclude = df_label_exclude.idxmax(axis=1)
     # code label to binary
-    lab = label_exclude=='chronic central pain'
-    label = lab.astype(int)
+    if 'chronic central pain' in label_exclude: # binary case
+        lab = label_exclude=='chronic central pain'
+        label = lab.astype(int)
+    else: # non-binary case
+        label = label_exclude
 
     dff = df_exclude.merge(label.rename('label'), left_index=True, right_index=True)
     # impute
@@ -404,11 +417,12 @@ if __name__=="__main__":
     idp = 'all'
     pain_status = 'restricted'# 'must', 'all'
     # load data
-    dff_imputed = load_patient_grouped(pain_status=pain_status, questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=True, patient_grouping='simplified')
+    # dff_imputed = load_patient_grouped(pain_status=pain_status, questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=True, patient_grouping='simplified')
+    dff_imputed = load_patient_grouped(pain_status=pain_status, questionnaire=questionnaire, idp=idp, question_visits=question_visits, imputed=True, patient_grouping='grouped')
 
     # basic classification
     classifiers = ['rforest']#'dtree', 
     for c in classifiers:
         # basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype', scaler=True, balance=True)
-        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype_restricted', scaler=True, balance=True)
+        basic_classify(dff_imputed, classifier=c, random_state=0, test_size=0.25, save_plot=True, num_importance=20, questionnaire=questionnaire, idp=idp, save_name='paintype_restricted_2', scaler=True, balance=True)
         # dfr = cv_classify(dff_imputed, classifier=c, cv_fold=10, questionnaire=questionnaire, idp=idp)

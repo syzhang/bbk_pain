@@ -19,3 +19,10 @@ do
     fsl_sub -T 30 python connectivity_mat.py $clf $conn
     done
 done
+
+# features"paintype_restricted"
+for dat in "paintype_all" "paintype_must" "paintype_restricted"
+    do 
+    echo "submitted connmat with dataset $dat"
+    fsl_sub -T 30 python feature_eng.py $dat
+done

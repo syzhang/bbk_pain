@@ -35,8 +35,8 @@ def load_outputs(task_name='paintype'):
 def plot_compare(df, save_name='paintype', comp_var='IDP', hue_var=None):
     """plot model comparison"""
     # plot
-    f, axes = plt.subplots(3, 1, figsize=(9, 7), sharex=True)
     plot_ls = [c for c in df.columns if 'test_' in c]
+    f, axes = plt.subplots(len(plot_ls), 1, figsize=(9, 7), sharex=True)
     for i, c in enumerate(plot_ls):
         if hue_var:
             g = sns.barplot(x=df[comp_var], y=df[c], hue=df[hue_var], palette="Paired", ax=axes[i])
@@ -89,9 +89,10 @@ if __name__=="__main__":
         comp_var = 'dataset'
         # plot single classfier with all datasets
         all_ls = []
-        # clf = 'lgb'
-        clf = 'rforest'
-        fpath = f'./model_performance/output/{clf}/'
+        clf = 'lgb'
+        # clf = 'rforest'
+        # fpath = f'./model_performance/output/{clf}/'
+        fpath = f'./model_performance/output_patient/{clf}/'
         conn_ls = os.listdir(fpath)
 
         for conn in conn_ls:
@@ -106,4 +107,20 @@ if __name__=="__main__":
                     df_tmp['features'] = ('_').join(fname.split('_')[1:])
                     all_ls.append(df_tmp)
             dff = pd.concat(all_ls)
-            plot_compare(dff, save_name=f'feature_{clf}_{conn}', comp_var=comp_var, hue_var='features')
+            # plot_compare(dff, save_name=f'feature_{clf}_{conn}', comp_var=comp_var, hue_var='features')
+            plot_compare(dff, save_name=f'feature_{clf}_{conn}_ptn', comp_var=comp_var, hue_var='features')
+    elif plot_type=='feature':
+        fpath = f'./model_performance/output_features/'
+        f_ls = os.listdir(fpath)
+        c = 'test_roc_auc_ovr'
+        for f in f_ls:
+            df_tmp = pd.read_csv(os.path.join(fpath,f))
+            sns.barplot(x=df_tmp['dataset'], y=df_tmp[c], palette="Paired")
+            plt.xticks(rotation=90)
+            # axes[i].axhline(np.mean(df[c]), color='k', clip_on=False)
+            # axes[i].set_ylabel(c)
+            dfc_diff = df_tmp[c].max() - df_tmp[c].min()
+            plt.ylim(df_tmp[c].mean()-0.5*dfc_diff, df_tmp[c].mean()+0.5*dfc_diff)
+            save_name = f.split('.')[0]
+            plt.savefig(f'./model_performance/figs/{save_name}_compare.png', bbox_inches='tight')
+
