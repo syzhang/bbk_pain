@@ -318,6 +318,9 @@ def basic_classify(df, classifier='dtree', test_size=0.5, random_state=10, plot_
     elif classifier == 'rforest':
         from sklearn.ensemble import RandomForestClassifier
         clf = RandomForestClassifier(max_depth=5).fit(X_train, y_train)
+    elif classifier == 'lgb':
+        import lightgbm as lgb
+        clf = lgb.LGBMClassifier(n_jobs=-1)
     # predict test set
     y_test_predicted = clf.predict(X_test)
     

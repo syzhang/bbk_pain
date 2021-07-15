@@ -114,7 +114,9 @@ if __name__=="__main__":
         f_ls = os.listdir(fpath)
         c = 'test_roc_auc_ovr'
         for f in f_ls:
+            # plt.subplots(figsize=(30,10))
             df_tmp = pd.read_csv(os.path.join(fpath,f))
+            df_tmp = sort_compare(df_tmp, comp_var='dataset', criteria='roc_auc_ovr', sort_top=20)
             sns.barplot(x=df_tmp['dataset'], y=df_tmp[c], palette="Paired")
             plt.xticks(rotation=90)
             # axes[i].axhline(np.mean(df[c]), color='k', clip_on=False)

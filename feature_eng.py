@@ -200,47 +200,63 @@ if __name__=="__main__":
     results = []    
     opts = [False, True]
     qic_opts = ['q', 'i', 'c', 'qi', 'qc', 'ic', 'qic']
-    for quantile_id in opts:
-        for umap_id in opts:
-            for factor_id in opts:
-                for kmeans_id in [False]:
-                    for qic_id in qic_opts:
-                        for random_state in range(4): # cv
-                            # train test split
-                            train, test = tsplit(df, test_size, random_state, scale=False)
-                            # label
-                            quantile_label = 'quantile-'+qic_id
-                            kmeans_label = 'kmeans-'+qic_id
-                            factor_label = 'fa-'+qic_id
-                            umap_label = 'umap-'+qic_id
-                            all_labels = [quantile_label*quantile_id, kmeans_label*kmeans_id, factor_label*factor_id, umap_label*umap_id]
-                            all_label = '_'.join(all_labels)
-                            check_steps = 0
-                            # transform
-                            if quantile_id:
-                                train, test = quantile_trans(train, test, is_train=True, qic=qic_id)
-                                check_steps += 1
-                            # kmeans cluster
-                            if kmeans_id:
-                                train, test = cluster_feats(train, test, qic=qic_id, n_comp=20)
-                                check_steps += 1
-                            # factor analysis
-                            if factor_id:
-                                train, test = factor_analysis(train, test, n_comp=20, qic=qic_id, is_train=True)
-                                check_steps += 1
-                            # umap analysis
-                            if umap_id:
-                                train, test = umap_analysis(train, test, n_comp=20, qic=qic_id, is_train=True)
-                                check_steps += 1
-                            # rforest train
-                            if check_steps>0:
-                                res = rforest_train(train, test)
-                                print(all_label)
-                                res['dataset'] = all_label
-                                results.append(res)
+
+    save_fname = dir_name + f'feature_eng_umap_{data_name}.csv'
+    ### testing best umap setting
+    for qic_id in qic_opts:
+        for n in range(2, 20, 3): # number of components
+            for random_state in range(4): # cv
+                # train test split
+                train, test = tsplit(df, test_size, random_state, scale=False)
+                # umap analysis
+                train, test = umap_analysis(train, test, n_comp=n, qic=qic_id, is_train=True)
+                # rforest train
+                res = rforest_train(train, test)
+                res['dataset'] = qic_id+'_'+str(n)
+                results.append(res)
+
+    # save_fname = dir_name + f'feature_eng_{data_name}.csv'
+    ### testing various combinations of feats
+    # for quantile_id in opts:
+    #     for umap_id in opts:
+    #         for factor_id in opts:
+    #             for kmeans_id in [False]:
+    #                 for qic_id in qic_opts:
+    #                     for random_state in range(4): # cv
+    #                         # train test split
+    #                         train, test = tsplit(df, test_size, random_state, scale=False)
+    #                         # label
+    #                         quantile_label = 'quantile-'+qic_id
+    #                         kmeans_label = 'kmeans-'+qic_id
+    #                         factor_label = 'fa-'+qic_id
+    #                         umap_label = 'umap-'+qic_id
+    #                         all_labels = [quantile_label*quantile_id, kmeans_label*kmeans_id, factor_label*factor_id, umap_label*umap_id]
+    #                         all_label = '_'.join(all_labels)
+    #                         check_steps = 0
+    #                         # transform
+    #                         if quantile_id:
+    #                             train, test = quantile_trans(train, test, is_train=True, qic=qic_id)
+    #                             check_steps += 1
+    #                         # kmeans cluster
+    #                         if kmeans_id:
+    #                             train, test = cluster_feats(train, test, qic=qic_id, n_comp=20)
+    #                             check_steps += 1
+    #                         # factor analysis
+    #                         if factor_id:
+    #                             train, test = factor_analysis(train, test, n_comp=20, qic=qic_id, is_train=True)
+    #                             check_steps += 1
+    #                         # umap analysis
+    #                         if umap_id:
+    #                             train, test = umap_analysis(train, test, n_comp=20, qic=qic_id, is_train=True)
+    #                             check_steps += 1
+    #                         # rforest train
+    #                         if check_steps>0:
+    #                             res = rforest_train(train, test)
+    #                             print(all_label)
+    #                             res['dataset'] = all_label
+    #                             results.append(res)
     df_res = pd.concat(results)
     print(df_res)
     # save
-    fname = dir_name + f'feature_eng_{data_name}.csv'
-    print(fname)
-    df_res.to_csv(fname, index=None)
+    print(save_fname)
+    df_res.to_csv(save_fname, index=None)
