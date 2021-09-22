@@ -109,13 +109,13 @@ def check_eid(task_name='paintype', dff_imputed=None, add_questionnaire=False, a
     elif task_name=='paintype_restricted':
         dff_imputed = df_colappend('restricted', add_questionnaire=add_questionnaire, add_idp=add_idp, patient_grouping=patient_grouping, visits=visits)
     elif task_name=='digestive':
-        dff_imputed = load_digestive_data(label_type='severe', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag)
+        dff_imputed = load_digestive_data(label_type='severe', questionnaire=add_questionnaire, idp=add_idp, question_visits=visits, imputed=impute_flag)
     elif task_name=='paincontrol_all':
-        dff_imputed = load_pain_matched(pain_status='all', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag)
+        dff_imputed = load_pain_matched(pain_status='all', questionnaire=add_questionnaire, idp=add_idp, question_visits=visits, imputed=impute_flag)
     elif task_name=='paincontrol_must':
-        dff_imputed = load_pain_matched(pain_status='must', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag)
+        dff_imputed = load_pain_matched(pain_status='must', questionnaire=add_questionnaire, idp=add_idp, question_visits=visits, imputed=impute_flag)
     elif task_name=='paincontrol_restricted':
-        dff_imputed = load_pain_matched(pain_status='restricted', questionnaire=questionnaire, idp=idp, question_visits=visits, imputed=impute_flag)
+        dff_imputed = load_pain_matched(pain_status='restricted', questionnaire=add_questionnaire, idp=add_idp, question_visits=visits, imputed=impute_flag)
     elif task_name==None and dff_imputed is not None:
         dff_imputed = dff_imputed
     return dff_imputed

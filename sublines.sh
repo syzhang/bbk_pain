@@ -21,7 +21,7 @@ do
 done
 
 # features"paintype_restricted" "paintype_must" "paintype_restricted"
-for dat in "paintype_all"
+for dat in "digestive" "paincontrol_all" "paincontrol_must" "paincontrol_restricted"
     do 
     echo "submitted connmat with dataset $dat"
     fsl_sub -T 100 python feature_eng.py $dat
