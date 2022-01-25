@@ -1,0 +1,130 @@
+code,Field title
+120000,"Ever had osteoarthritis affecting one or more joints (e.g. hip, knee, shoulder)"
+120001,Ever had rheumatoid arthritis affecting one or more joints
+120002,Ever had cancer pain
+120003,Ever had carpal tunnel syndrome
+120004,Ever had complex regional pain syndrome (also known as CRPS)
+120005,Ever had chronic post-surgical pain
+120006,Year surgery was performed leading to chronic post-surgical pain
+120007,Ever had diabetes (Type I or Type II)
+120008,Ever had any cause of nerve damage/neuropathy other than diabetic neuropathy
+120009,Ever had fibromyalgia syndrome
+120010,Ever had chronic Fatigue Syndrome or Myalgic Encephalomyelitis (M.E.)
+120011,Ever had gout
+120012,Currently experiencing a gout flare
+120013,Gout causing a swollen joint now
+120014,Gout causing a warm joint now
+120015,Average pain from gout in the past 24 hours while resting
+120016,Ever had migraine
+120017,Ever had pelvic pain
+120018,Ever had post herpetic neuralgia (pain after shingles)
+120019,Troubled by pain or discomfort present for more than 3 months
+120020,Length of time of pain or discomfort
+120021,Pain or discomfort all over the body in the last 3 months
+120022,All over body pain in last three months and rating of pain
+120023,Head pain in last three months and rating of pain
+120024,Face pain in last three months and rating of pain
+120025,Neck or shoulder pain in last three months and rating of pain
+120026,Back pain in last three months and rating of pain
+120027,Stomach or abdomen pain in last three months and rating of pain
+120028,Hip pain in last three months and rating of pain
+120029,Knee pain in last three months and rating of pain
+120030,Arm pain in last three months and rating of pain
+120031,Hand pain in last three months and rating of pain
+120032,Pain or discomfort in both feet in last three months
+120033,Feet pain in last three months and rating of pain
+120034,Leg pain in last three months and rating of pain
+120035,Chest pain in last three months and rating of pain
+120036,Pain or discomfort in another part of the body in the last 3 months
+120037,Area most bothered by pain in the last three months
+120038,Pain or tenderness during the past week
+120039,Location of pain during the past week
+120040,Fatigue severity over the past week
+120041,Waking unrefreshed severity over the past week
+120042,Cognitive symptoms severity over the past week
+120043,Pain or cramps in lower abdomen in past six months
+120044,Depression in past six months
+120045,Headache in past six months
+120046,Burning pain present in pain that bothers the most
+120047,Painful cold present in pain that bothers the most
+120048,Electric shocks present in pain that bothers the most
+120049,Tingling present in pain that bothers the most
+120050,Pins and needles present in pain that bothers the most
+120051,Numbness present in pain that bothers the most
+120052,Itching present in pain that bothers the most
+120053,Bad and/or recurring headaches at any time in life
+120054,Number of days with headache in past three months
+120055,When worst headaches began
+120056,When worst headaches ended
+120057,Days per month having headaches when they were at their worst
+120058,Pain worst on just one side when headaches were at their worst
+120059,"Pain pounding, pulsating or throbbing when headaches were at their worst"
+120060,Pain moderate or severe when headaches were at their worst
+120061,Pain made worse by routine activities when headaches were at their worst
+120062,Felt sick or being sick when headaches were at their worst
+120063,Bothered by light when headaches were at their worst
+120064,Bothered by sound when headaches were at their worst
+120065,Visual changes before or near the onset of headaches
+120066,Visual changes develop slowly before or near the onset of headaches
+120067,"Tingling or numbness in face, arms or legs before or near the onset of headaches"
+120068,Tingling and/or numbness spreads slowly before or near the onset of headaches
+120069,"Develop tiredness, yawning, concentration problems, changes in mood or appetite, irritability, neck stiffness, light or sound sensitivity before or near the onset of headaches"
+120070,"Number of days in the last 3 months headaches interfered with ability to work, study or enjoy life"
+120071,Legs and/or feet are usually numb
+120072,Usually have burning pain in legs and/or feet
+120073,Feet usually too sensitive to touch
+120074,Usually get muscle cramps in legs and/or feet
+120075,Usually have prickling feelings in legs or feet
+120076,Legs and feet usually hurt when the bed covers touch skin
+120077,Usually able to tell the hot water from the cold water
+120078,Ever had an open sore on foot
+120079,Ever had diabetic neuropathy
+120080,Feel weak all over most of the time
+120081,Feeling in feet and legs: symptoms are worse at night
+120082,Legs usually hurt when walking
+120083,Usually able to sense feet when walking
+120084,Skin on feet usually so dry that it cracks open
+120085,Ever had an amputation
+120086,Scale of pain that bothers most at its worst in the last 24 hours
+120087,Scale of pain that bothers most at its least in the last 24 hours
+120088,Scale of pain that bothers most on average
+120089,Scale of pain that bothers most right now
+120090,Scale of how much relief pain treatments or medications have provided in the last 24 hours
+120091,Scale of how much pain that bothers most has interfered with general activity
+120092,Scale of how much pain that bothers most has interfered with mood
+120093,Scale of how much pain that bothers most has interfered with walking ability
+120094,Scale of how much pain that bothers most has interfered with normal work
+120095,Scale of how much pain that bothers most has interfered with relations with other people
+120096,Scale of how much pain that bothers most has interfered with sleep
+120097,Scale of how much pain that bothers most has interfered with enjoyment of life
+120098,Mobility problems today
+120099,Self-care problems today
+120100,Problems doing usual activities
+120101,Pain/discomfort today
+120102,Anxiety/depression today
+120103,Scale to indicate how health is today
+120104,Little interest or pleasure in doing things over the last two weeks
+120105,"Feeling down, depressed, or hopeless over the last two weeks"
+120106,"Trouble falling or staying asleep, or sleeping too much over the last two weeks"
+120107,Feeling tired or having little energy over the last two weeks
+120108,Poor appetite or overeating over the last two weeks
+120109,Feeling bad about self over the last two weeks
+120110,Trouble concentrating over the last two weeks
+120111,Moving or speaking slower or faster than usual over the last two weeks
+120112,Thoughts of being better off dead or of hurting self over the last two weeks
+120113,"Level of difficultly depression has made to do work, take care of things at home, or get along with other people"
+120114,"Persistent or recurrent tiredness, weariness or fatigue that has lasted for at least 6 months"
+120115,"Tiredness, weariness or fatigue goes away when resting"
+120116,"Tiredness, weariness or fatigue happening only because of exercising and/or working too much"
+120117,Tired after minimal physical or mental exertion
+120118,Suffered from fatigue or exhaustion in the last week
+120119,Motivation is lower when fatigued
+120120,Exercise brings on fatigue
+120121,Easily fatigued
+120122,Fatigue interferes with physical functioning
+120123,Fatigue causes frequent problems
+120124,Fatigue prevents sustained physical functioning
+120125,Fatigue interferes with carrying out certain duties and responsibilities
+120126,Fatigue is among three most disabling symptoms
+120127,"Fatigue interferes with work, family or social life"
+120128,When pain questionnaire completed
